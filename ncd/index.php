@@ -1,0 +1,443 @@
+<?php 
+		session_start();
+		include("conn/conn.php");
+		include("libs/function.php");
+		$btn_st = $_POST['txt_st_btn'];
+		$y_select =   $_POST['y_select'];
+		if($y_select ==""){
+			if(date('m')>9){
+				$y_select  = date('Y')+1;
+			}else{
+                $y_select  = date('Y');
+			}
+		}
+
+					$dateInput1 = get_year_begin($y_select);
+				    $dateInput2 = get_year_end($y_select);
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+   <!-- <title>SB Admin - Bootstrap Admin Template</title>-->
+		<title>โรงพยาบาลผาขาว</title>
+	
+	<!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/sb-admin.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="css/plugins/morris.css" rel="stylesheet">
+    
+    <!-- Custom Fonts -->
+    <link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.php">ระบบแสดงผลงาน โรงพยาบาลผาขาว </a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">            
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Gest <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> ส่วนตัว</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-envelope"></i> กล่องเข้า</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-gear"></i> ตั้งค่าระบบ</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-power-off"></i> ออกจากระบบ</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a href="index.php"><i class="fa fa-fw fa-home"></i> งานส่งเสริม(PCU)</a>
+                    </li>
+                    <li>
+                        <a href="ncd.php"><i class="fa fa-fw fa-github"></i> งาน NCD</a>
+                    </li>
+                    <li>
+                        <a href="index.php"><i class="fa fa-fw fa-bullhorn"></i> งาน บริการ</a>
+                    </li>
+                    <li>
+                        <a href="index.php"><i class="fa fa-fw fa-bomb"></i> งาน บริหาร</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                     สถิติข้อมูล  <small>งานส่งเสริม</small>
+                        </h1>
+				<!--    <ol class="breadcrumb">
+                            <li class="active">
+                                <i class="fa fa-dashboard"></i> Dashboard
+                            </li>
+                        </ol>  -->
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="alert alert-info alert-dismissable">
+								 
+						<!--	  <form name="frm_select_date" id="frm_select_date" method="POST">
+								  <input name="dateInput1" style="color:blue" type="text" id="dateInput1" value="<?php echo $dateInput1;?>" placeholder="วันที่เริ่มต้น" />&nbsp;&nbsp;&nbsp;
+									<input name="dateInput2" style="color:blue" type="text" id="dateInput2" value="<?php echo $dateInput2;?>" placeholder="ถึงวันที่" />
+									<button type="submit" name="submit" id="submit" class="btn btn-success" onclick="chk_btn()" >OK</button>
+									<input name="txt_st_btn" type ="hidden" id="st_btn">
+							  </form>
+								-->
+
+								<?php  
+
+								echo   get_year_begin($y_select);
+										$sql_max = "select max(year(vstdate)) as  Y from vn_stat";
+										$query_max = mysql_query($sql_max);
+
+										while($result_max=mysql_fetch_array($query_max)){
+												$y_max = $result_max['Y'];
+											
+										}
+
+										$sql = "select year(vstdate) as  Y from vn_stat
+													where year(vstdate) > 0
+													group by year(vstdate) order by year(vstdate) desc";
+										$query = mysql_query($sql);
+
+																								
+								?>
+
+						   <form name = 'frm_select_y' method = 'POST'>
+						   <i class="fa fa-calendar-o"></i>
+						   <label> เลือกปีงบ</label>
+                                <select  name="y_select">
+								   <?php if($y_select<>""){
+											 echo  "<option value='".$y_select."' selected>".($y_select+543)."</option>";
+									} ?>
+								<option value="<?php echo ($y_max+1); ?>"><?php echo (($y_max+543)+1); ?></option>
+								<?php  	
+										while($result=mysql_fetch_array($query)){
+												$y_show = $result['Y'];
+											echo  "<option value='".$y_show."'>".($y_show+543)."</option>";
+										}
+								?>
+								
+                                </select>
+								<button type="submit" class="btn btn-success">เลือก</button>
+							</form>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_anc($dateInput1,$dateInput2); ?></div>
+                                        <div>บริการฝากครรภ์</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#" class="open-sendname" data-toggle="modal" data-target="#myModal" data-id="<?=$dateInput1; ?>" data-idx="1">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(ครั้ง) View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_vaccine($dateInput1,$dateInput2);  ?></div>
+                                        <div>บริการวัคซีน</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(ครั้ง) View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_fp($dateInput1,$dateInput2);?></div>
+                                        <div>บริการวางแผนครอบครัว</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(ครั้ง)  View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-red">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+										<i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_nutrition($dateInput1,$dateInput2);?></div>
+                                        <div>(ครั้ง)  ตรวจภาวะโภชนาการ</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+					  <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-red">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <!--<i class="fa fa-support fa-5x"></i> -->
+										
+										<i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_mch($dateInput1,$dateInput2);?></div>
+                                        <div>เยี่ยมหลังคลอด แม่</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(คน : ครั้ง)  View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_pp($dateInput1,$dateInput2);?></div>
+                                        <div>เยี่ยมหลังคลอด เด็ก</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(คน : ครั้ง)  View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_survey($dateInput1,$dateInput2); ?></div>
+                                        <div>บริการเยี่ยมบ้าน</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">(หลัง  :   คน)   View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-refresh fa-spin fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"><?php echo get_development($dateInput1,$dateInput2);?></div>
+                                        <div>ตรวจพัฒนาการ</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+						        <div class="panel-footer">
+                                    <span class="pull-left">(ครั้ง)  View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+				<div class="row">
+				 <div class="col-lg-6">
+                        <h2>อันดับโรค งาน 506</h2>
+                        <div class="table-responsive">
+						<?php 
+								$sql = "select pdx,concat(name506.name ,substr(icd101.name,1,15),'...') as Name_,count(vn) as C_vn
+										from surveil_member
+										left join name506 on surveil_member.code506 = name506.code506
+										left join icd101 on surveil_member.pdx  = icd101.code
+										where report_date between '$dateInput1'  and '$dateInput2'
+										group by pdx order by C_vn desc limit 10 " ;
+								
+								$query = mysql_query($sql);
+
+								
+						?>
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Diag..</th>
+                                        <th>ชื่อโรค...</th>
+                                        <th>จำนวน (ครั้ง)</th>
+                                        <th>...</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+								<?php  while($result=mysql_fetch_array($query)){ 
+									$pdx  = $result['pdx'];
+									$name  = $result['Name_'];
+									$cc  = $result['C_vn'];
+                                   echo  "<tr>
+											<td>$pdx</td>
+											<td>$name</td>
+											<td>$cc</td>
+											<td>...</td> 
+                                         </tr>";
+						         } ?> 
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+				
+
+
+        
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+
+
+
+
+    <!-- jQuery Version 1.11.0 -->
+    <script src="js/jquery-1.11.0.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="js/plugins/morris/raphael.min.js"></script>
+    <script src="js/plugins/morris/morris.min.js"></script>
+    <script src="js/plugins/morris/morris-data.js"></script>
+
+
+
+</body>
+
+</html>

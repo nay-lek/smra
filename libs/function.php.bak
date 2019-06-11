@@ -1,0 +1,327 @@
+<?php
+include("conn/conn.php");
+
+
+
+
+function get_date_sql($date_th_format){
+		
+		$date_insert  =  substr($date_th_format,6,4)-543;
+		$date_insert  =  $date_insert."/".substr($date_th_format,3,2);
+		$date_insert  =  $date_insert."/".(substr($date_th_format,0,2));
+		return $date_insert;
+}
+
+function get_date_show($date_f){		
+		$date_show  =  substr($date_f,8,2);
+		$date_show  =  $date_show."-".substr($date_f,5,2);
+		$date_show  =  $date_show."-".(substr($date_f,0,4)+543);
+		return $date_show;
+}
+
+
+function  get_date_end($m){			
+			switch($m) {
+					case 1  : $d = "31" ;
+					 case 2  : $d = "28" ;
+					  case 3  : $d = "31" ;
+					   case 4  : $d = "30" ;
+					    case 5  : $d = "31" ;
+					     case 6  : $d = "30" ;
+					      case 7  : $d = "31" ;
+					 	   case 8  : $d = "31" ;
+						    case 9  : $d = "30" ;
+							 case 10  : $d = "31" ;
+							  case 11  : $d = "30" ;
+							   case 12  : $d = "31" ;
+			}	
+			
+			return $d;
+}
+
+
+
+
+function get_village_allergy_table($pcu_code){
+	   if($pcu_code =='11039'){
+		$sql = "select vill.village_moo as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',vill.village_moo ,' บ.',vill.village_name) as Village_name ,count(distinct(opd.hn)) as C_Hn
+				from opd_allergy opd
+				left join patient pt on opd.hn  = pt.hn
+				left join person ps on pt.cid = ps.cid
+				left join village vill on ps.village_id = vill.village_id
+				where concat(pt.chwpart , pt.amppart, pt.tmbpart )  = '421203'
+				group by vill.village_name
+				order by vill.village_id ";
+	   }else{
+
+		   if($pcu_code =='04770'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421201'
+						 group by pt.moopart order by pt.moopart";
+				}
+		   if($pcu_code =='04771'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421202' and pt.moopart not in(6,7,8,10,14)
+						 group by pt.moopart order by pt.moopart";
+				}
+		   if($pcu_code =='04772'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421202' and pt.moopart  in(6,7,8,10,14)
+						 group by pt.moopart order by pt.moopart";
+				}
+			if($pcu_code =='04773'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421204' and pt.moopart  not in(2,3,11)
+						 group by pt.moopart order by pt.moopart";
+				}
+			if($pcu_code =='04774'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421204' and pt.moopart   in(2,3,11)
+						 group by pt.moopart order by pt.moopart";
+				}
+
+			if($pcu_code =='04775'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart) as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						where concat(pt.chwpart , pt.amppart, pt.tmbpart ) = '421205'
+						 group by pt.moopart order by pt.moopart";
+				}
+
+			if($pcu_code =='other'){		
+			   $sql = "select pt.moopart as Moo, concat(pt.chwpart , pt.amppart, pt.tmbpart) as id_,concat('ม.',pt.moopart,' [',thai.full_name,']')  as Village_name ,
+						count(distinct(opd.hn)) as C_Hn
+						from opd_allergy opd
+						left join patient pt on opd.hn = pt.hn
+						left join thaiaddress  thai on concat(pt.chwpart , pt.amppart, pt.tmbpart ) = thai.addressid
+						where (concat(pt.chwpart , pt.amppart, pt.tmbpart ) not in('421201','421202','421203','421204','421205') or pt.chwpart is null)
+						 group by concat(pt.chwpart , pt.amppart, pt.tmbpart ),pt.moopart order by pt.moopart";
+				}
+
+
+	   }
+  // echo $sql;
+
+        
+
+		$query = mysql_query($sql);
+	//	$num_row = mysql_num_rows($query);
+		$tb  = "<table class='table table-bordered table-hover table-striped'>
+                                <thead>
+                                    <tr class='danger'>
+                                        <th>หมู่บ้าน</th>
+                                        <th>จำนวน </th>                                        
+                                    </tr>
+                                </thead>
+                                <tbody> ";
+
+			$sum_C_Hn = 0;
+
+			while($result = mysql_fetch_array($query)){
+					
+					$Village  = $result['Village_name'];
+					$C_Hn = $result['C_Hn'];
+					$id_ = $result['id_'];
+					$Moo  = $result['Moo'];
+					$sum_C_Hn  = $sum_C_Hn + $C_Hn ;
+					$tb = $tb."	<tr>
+									<td>$Village</td>
+									<td><a target='_blank' href='showdetail.php?pcu_code=$pcu_code&id=$id_&moo=$Moo&vil_name=$Village&cHn=$C_Hn'>$C_Hn</a></td>
+								</tr> ";
+			}
+
+					   $tb = $tb."  
+								<tr>
+									<th>รวม</td>
+									<th>$sum_C_Hn</td>
+                                 </tr>
+								</tbody>
+                            </table> ";
+					return $tb;
+					
+					
+
+	}//-------get_village_alleey_table --------------------
+
+
+
+
+
+
+	function get_drugallergy_detail($pcu_code,$id_,$moo_id){
+		if($pcu_code=='11039'){
+		$sql = "select opd.hn,concat(pt.pname,' ' ,pt.fname,' ' ,pt.lname) as pt_name  ,count(opd.hn) as C_C ,group_concat(opd.agent) as C_drug
+				from opd_allergy opd
+				left join patient pt on opd.hn  = pt.hn
+				left join person ps on pt.cid = ps.cid
+				left join village vill on ps.village_id = vill.village_id
+				where concat(pt.chwpart , pt.amppart, pt.tmbpart )  = '$id_'  and vill.village_moo in($moo_id)
+				group by opd.hn ";
+		}else{
+
+			$sql = "select opd.hn,concat(pt.pname,' ' ,pt.fname,' ' ,pt.lname) as pt_name  ,count(opd.hn) as C_C ,group_concat(opd.agent) as C_drug
+				from opd_allergy opd
+				left join patient pt on opd.hn  = pt.hn
+				where concat(pt.chwpart , pt.amppart, pt.tmbpart )  = '$id_'  and pt.moopart in($moo_id)
+				group by opd.hn ";
+
+
+
+		}
+
+
+
+		echo $sql;
+		$query = mysql_query($sql);
+		$num_row = mysql_num_rows($query);
+		$tb  = "<table class='table table-bordered table-hover table-striped'>
+                                <thead>
+                                    <tr>
+                                        <th>ลำดับ</th>
+                                        <th>ชื่อ - สกุล </th>
+                                        <th>จำนวนยาที่แพ้</th>
+										<th>ชื่อยาที่แพ้</th>
+                                    </tr>
+                                </thead>
+                                <tbody> ";
+
+			$items = 1;
+
+			while($result = mysql_fetch_array($query)){
+					
+					//$C_vn  = $result['C_vn'];
+					$pt_name =$result['pt_name'];
+					$C_C =  wordwrap($result['C_C'],5, "\n", true);
+					$C_drug  = wordwrap($result['C_drug'],30, "\n", true);
+				    $hn  = $result['hn'];
+					//$sum_C_vn  = $sum_C_vn + $C_vn ;
+					$tb = $tb."	<tr>
+									<td>$items</td>
+									<td><a target='_blank' href='showdetail_list.php?pcu_code=$pcu_code&hn=$hn&pt_name=$pt_name'> $pt_name</a></td>
+									<td>$C_C</td> 
+									<td>$C_drug</td>
+                                 </tr> ";
+					$items = $items+1;
+			}
+
+					   $tb = $tb."  
+								</tbody>
+                            </table> ";
+					return $tb;
+
+				
+
+	}//-------get_drugalleey_detail --------------------
+
+
+
+	function get_drugallergy_detail_list($HN){
+		$sql = "select opd.hn,concat(pt.pname,' ' ,pt.fname,' ' ,pt.lname) as pt_name   ,opd.agent  ,opd.symptom,opd.begin_date
+				from opd_allergy opd
+				left join patient pt on opd.hn  = pt.hn
+				left join person ps on pt.cid = ps.cid
+				left join village vill on ps.village_id = vill.village_id
+				where opd.hn = '$HN' ";
+		//echo $sql;
+		$query = mysql_query($sql);
+		$num_row = mysql_num_rows($query);
+		$tb  = "<table class='table table-bordered table-hover table-striped'>
+                                <thead>
+                                    <tr class='info'>
+                                        <th>ลำดับ</th>
+                                        <th>ชื่อยาที่แพ้</th>
+										<th>อาการที่แพ้</th>
+										<th>วันที่แจ้ง</th>
+                                    </tr>
+                                </thead>
+                                <tbody> ";
+
+			$items = 1;
+
+			while($result = mysql_fetch_array($query)){
+					
+					//$C_vn  = $result['C_vn'];
+					$begin_date = get_date_show($result['begin_date']);
+					$agent = $result['agent'];
+					$symptom  = $result['symptom'];
+				    $hn  = $result['hn'];
+					//$sum_C_vn  = $sum_C_vn + $C_vn ;
+					$tb = $tb."	<tr>
+									<td>$items</td>
+									<td>$agent</td> 
+									<td>$symptom</td>
+									<td>$begin_date</td>
+                                 </tr> ";
+					$items = $items+1;
+			}
+
+					   $tb = $tb."  
+								</tbody>
+                            </table> ";
+					return $tb;
+
+				
+
+	}//-------get_drugalleey_detail --------------------
+
+
+
+		function get_pt_drugallergy($sql){
+		//echo $sql;
+		$query = mysql_query($sql);
+		$num_row = mysql_num_rows($query);
+		$tb  = "<table class='table table-hover table-condensed table-bordered '>
+                                <thead>
+                                    <tr class='info'>
+                                        <th>ลำดับ</th>
+                                        <th>ชื่อ-สกุล</th>
+										<th>อายุ</th>
+										<th>จำนวนยาที่แพ้</th>
+                                    </tr>
+                                </thead>
+                                <tbody> ";
+
+			$items = 1;
+
+			while($result = mysql_fetch_array($query)){
+
+					//$C_vn  = $result['C_vn'];
+					$pt_name = $result['pt_name'];
+					$age_y = $result['age_y'];
+					$C_C  = $result['C_C'];
+				    $hn  = $result['hn'];
+					//$sum_C_vn  = $sum_C_vn + $C_vn ;
+					$tb = $tb."	<tr class='warning'>
+									<td>$items</td>
+									<td><a target='_blank' href='showdetail_list.php?hn=$hn&pt_name=$pt_name'>$pt_name</a></td> 
+									<td>$age_y</td>
+									<td>$C_C</td>
+                                 </tr> ";
+					$items = $items+1;
+			}
+
+					   $tb = $tb."  
+								</tbody>
+                            </table> ";
+					return $tb;
+
+				
+
+	}//-------get_drugalleey_detail --------------------
+?>

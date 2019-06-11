@@ -1,0 +1,11 @@
+<?
+	$hostname = "192.168.1.200";
+	$username = "sa";
+	$password = "myadmin";
+	$dbname = "hos";
+	$Conn = mysql_connect($hostname,$username,$password) or die("Can't conncet database");
+				mysql_select_db($dbname) or die("Can't connect table");
+				mysql_query("SET NAMES UTF8");
+
+
+?>
