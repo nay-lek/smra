@@ -389,6 +389,17 @@
                                   </div>  
 
 
+                                  <div class="col-md-3"> 
+                                          <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #333;" >
+                                                  <a href="prenatal_index.php?vn=<?=get_vn_4digit($selyear,$selmonth);?>" target="_blank"
+                                                   <?php if(get_rows_Prenatal_Error_all(get_vn_4digit($selyear,$selmonth))==0){;?>  class="btn btn-success btn-md "<?php }else{ ?> class="btn btn-warning btn-md " <?php } ?>   role="button">
+                                                   
+                                                              PRENATAL   : 
+                                                          <span class="badge" > <?=get_rows_Prenatal_Error_all(get_vn_4digit($selyear,$selmonth));?> </span>
+                                                  </a>
+                                           </div> 
+                                  </div>  
+
 
                                   <div class="col-md-3"> 
                                           <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #333;" >

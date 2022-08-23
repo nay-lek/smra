@@ -54,7 +54,7 @@ $error_code = $_GET['err'];
           $query1 =  mysql_query($sql);      
           while ($result=mysql_fetch_array($query1)) {
 
-             if($error_code=='DX9903'){
+             if($error_code=='DX9903' ||$error_code=='DX9910' || $error_code=='DX9911' ){
                 $sql1 = $result['sql_script']."  like'$vn4digit%' group by vn ";
              }else{
                 $sql1 = $result['sql_script']."  like'$vn4digit%' ";
@@ -322,6 +322,23 @@ $error_code = $_GET['err'];
                   $det242 =  date_format($det242, 'Y-m-d');  
                   //-------- END 42 Month
 
+                  //-------start 60 month  --------------
+                  $dst60 = date_create($first_day);
+                  date_add($dst60, date_interval_create_from_date_string('-60 month'));
+                  $dst60 =  date_format($dst60, 'Y-m-d');
+
+                  $det60 = date_create($dst60);
+                  date_add($det60, date_interval_create_from_date_string('-29 days'));
+                  $det60 =  date_format($det60, 'Y-m-d');  
+
+                  $dst260 = date_create($last_day);
+                  date_add($dst260, date_interval_create_from_date_string('-60 month'));
+                  $dst260 =  date_format($dst260, 'Y-m-d'); 
+
+                  $det260 = date_create($dst260);
+                  date_add($det260, date_interval_create_from_date_string('-29 days'));
+                  $det260 =  date_format($det260, 'Y-m-d');  
+                  //-------- END 60 Month
 
 
            $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
@@ -343,6 +360,10 @@ $error_code = $_GET['err'];
                   case 'NU9904':
                      $sql1 =  $result['sql_script']." and  birthdate between '$dst42' and '$dst242' GROUP BY person.person_id ";
                   break; 
+
+                   case 'NU9906':
+                     $sql1 =  $result['sql_script']." and  birthdate between '$dst60' and '$dst260' GROUP BY person.person_id ";
+                  break;                  
 
                   case 'NU9299':
                        $sql1 = $sql1 ;
@@ -561,6 +582,16 @@ $error_code = $_GET['err'];
 
 
 
+          case 'PR':
+          $vn4digit = $_GET['vn'];
+           $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
+          $query1 =  mysql_query($sql);      
+          while ($result=mysql_fetch_array($query1)) {
+             $sql1 = $result['sql_script'] . " between ".get_month_stagement($vn4digit);
+          }
+          break;
+
+
         default:
               $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
               $query1 =  mysql_query($sql);      
@@ -719,6 +750,11 @@ xmlns="http://www.w3.org/TR/REC-html40">
 
                                   case 'SE':
                                       echo get_rows_Service_Error_detail_list($error_code,$vn4digit,"export");
+                                    break;
+
+
+                                  case 'PR':
+                                      echo get_rows_Prenatal_Error_detail_list($error_code,$vn4digit,"export");
                                     break;
 
 

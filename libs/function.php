@@ -919,6 +919,7 @@ function get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {
                                       <th> ชื่อ - สกุล </th>
                                       <th> CID</th>
                                       <th> DATEServ</th>
+                                      <th> TimeServ</th>
                                  </tr>
 
                                       ";
@@ -932,6 +933,7 @@ function get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {
         $DATEServ = get_date_show($result['vstdate']);
         $person_id = $result['hn'];
         $cid = $result['cid'];
+        $vsttime = $result['vsttime'];
         $i = $i + 1;
         //$data   = $data. $i  . " | " . $person_id ." | ".$ptname." | ". $cid  . " | ".get_date_show($DATEServ).'<br>';
         $tb = $tb . "           <tr>
@@ -940,6 +942,7 @@ function get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {
                                       <td>$ptname </td>
                                       <td>$cid</td>
                                       <td>$DATEServ</td>
+                                      <td>$vsttime</td>
                                   </tr> 
 
                                   ";
@@ -1014,6 +1017,37 @@ function get_row_Diag_opd_Error_all($vn4digit) {
                 left join  icd10_nhso on ovstdiag.icd10 = icd10_nhso.code
                 where (ASCII(ovstdiag.icd10) between 65 and  90)
                         and ovstdiag.icd10 <>'R5100' and  icd10_nhso.code is null and ovstdiag.vn  like'$vn4digit%' 
+
+                 
+
+
+
+                 UNION
+
+
+                    select 'DX9910' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9910'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+                    from ovstdiag 
+                     LEFT JOIN patient ON ovstdiag.hn = patient.hn
+                     LEFT JOIN ovst on ovstdiag.vn = ovst.vn
+                     INNER JOIN (SELECT lab_head.vn
+                        from lab_order 
+                     left join lab_head on lab_order.lab_order_number = lab_head.lab_order_number 
+                     LEFT JOIN ovst ov1 on lab_head.vn  = ov1.vn 
+                    where lab_order.lab_items_code = '830' and  if(lab_order.lab_order_result = 'Positive' , 
+                              if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('U071','U072','Z290')> 0)  ,'Ok','NG'),
+                              if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('Z115')> 0),'Ok','NG')) = 'NG')  chk on ovstdiag.vn = chk.vn
+
+                    where  ASCII(SUBSTR(icd10,1,1)) BETWEEN 65 and 90 and  ovst.vn like'$vn4digit%' 
+
+
+                    UNION
+
+                    select 'DX9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+                    from ovstdiag 
+                     LEFT JOIN patient ON ovstdiag.hn = patient.hn
+                     LEFT JOIN ovst on ovstdiag.vn = ovst.vn
+                    where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' 
+
 
 				";
     //echo $sql;	
@@ -1097,7 +1131,33 @@ function get_rows_Diag_opd_Error_detail($vn4digit) {
                         left join  icd10_nhso on ovstdiag.icd10 = icd10_nhso.code
                         where (ASCII(ovstdiag.icd10) between 65 and  90)
                         and ovstdiag.icd10 <>'R5100' and  icd10_nhso.code is null and ovstdiag.vn  like'$vn4digit%'               
-                    
+                
+
+                UNION
+
+                select 'DX9910' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9910'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+                from ovstdiag 
+                 LEFT JOIN patient ON ovstdiag.hn = patient.hn
+                 LEFT JOIN ovst on ovstdiag.vn = ovst.vn
+                 INNER JOIN (SELECT lab_head.vn
+                    from lab_order 
+                 left join lab_head on lab_order.lab_order_number = lab_head.lab_order_number 
+                 LEFT JOIN ovst ov1 on lab_head.vn  = ov1.vn 
+                where lab_order.lab_items_code = '830' and  if(lab_order.lab_order_result = 'Positive' , 
+                          if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('U071','U072','Z290')> 0)  ,'Ok','NG'),
+                          if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('Z115')> 0),'Ok','NG')) = 'NG')  chk on ovstdiag.vn = chk.vn
+
+                where  ASCII(SUBSTR(icd10,1,1)) BETWEEN 65 and 90 and  ovst.vn like'$vn4digit%' 
+
+                UNION
+
+
+              select 'DX9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+                        from ovstdiag 
+                         LEFT JOIN patient ON ovstdiag.hn = patient.hn
+                         LEFT JOIN ovst on ovstdiag.vn = ovst.vn
+                        where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' 
+
 				order by CC desc , ERROR_CODE ";
     //echo $sql;	
     $CC = 0;
@@ -1149,7 +1209,7 @@ function get_rows_Diag_opd_Error_detail_list($error_code, $vn4digit, $xls) {
                                       ";
     $i = 0;
 
-    if($error_code=='DX9903'){
+    if($error_code=='DX9903'|| $error_code=='DX9910' ||  $error_code=='DX9911'){
             $query2 = mysql_query($sql1 . "  like'$vn4digit%' group by vn"); 
 
     }else{
@@ -1232,6 +1292,25 @@ function get_row_Anc_Error_all($vn4digit) {
                 and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit%'
 
 
+                UNION
+
+                select 'AN9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9905'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  
+                from person_anc
+                INNER JOIN (SELECT person_anc.person_anc_id , person_anc.person_id ,person_anc.preg_no  , count(person_anc_service.person_anc_id) as cc
+                , max(person_anc_service.anc_service_date) , max(person_anc_service.vn),oapp.nextdate,ROUND((DATEDIFF(CURDATE(),oapp.nextdate)/7),0) as 'Week_(Nextdate-Curdate)',
+                 person_anc_other_precare.precare_date , if(((DATEDIFF(CURDATE(),oapp.nextdate)/7) > 0 and person_anc_other_precare.precare_date is null and person_anc.labor_date is  null),'X','O') as chk 
+                from person_anc
+                LEFT JOIN person_anc_service on  person_anc.person_anc_id = person_anc_service.person_anc_id 
+                LEFT JOIN oapp on (SELECT vn from person_anc_service where person_anc_id = person_anc.person_anc_id ORDER BY person_anc_service.vn desc limit 1) = oapp.vn and oapp.clinic = '007'
+                LEFT JOIN person_anc_other_precare on person_anc.person_anc_id = person_anc_other_precare.person_anc_id and person_anc_other_precare.precare_date > oapp.nextdate
+                left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
+                where person_anc_service.anc_service_type_id = 1 and person_anc.discharge <> 'Y' and person_anc.out_region = 'N'
+                and oapp.nextdate < CURDATE()
+                GROUP BY person_anc.person_anc_id , person_anc.person_id, person_anc.preg_no 
+                HAVING chk = 'X'
+                ORDER BY person_anc.person_id ,person_anc.preg_no ) person_anc_chk on person_anc.person_anc_id = person_anc_chk.person_anc_id
+
+
                     UNION
 
                select 'AN9990' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9990'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person_anc.person_anc_id)),0) as CC  
@@ -1280,7 +1359,7 @@ function get_row_Anc_Error_all($vn4digit) {
                     and (TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) > (SELECT week_max from person_anc_preg_week where person_anc_preg_week_id = 1))
                     HAVING week_anc = 'NO' or person_anc.pre_labor_service1_date is null
                     ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
-                     where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'
+                     where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'
 
 
                     UNION
@@ -1312,7 +1391,7 @@ function get_row_Anc_Error_all($vn4digit) {
                     HAVING week_anc = 'NO' or person_anc.pre_labor_service2_date is null
                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
 
 
                     UNION
@@ -1346,7 +1425,7 @@ function get_row_Anc_Error_all($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service3_date is null
                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'
+                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'
 
 
                         UNION
@@ -1378,7 +1457,7 @@ function get_row_Anc_Error_all($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service4_date is null
                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
 
 
 
@@ -1411,7 +1490,7 @@ function get_row_Anc_Error_all($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service5_date is null
                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
 
 
                         UNION
@@ -1424,7 +1503,7 @@ function get_row_Anc_Error_all($vn4digit) {
                                             left JOIN person on ovst.hn = person.patient_hn) person_dental on person_anc.person_id= person_dental.person_id
                                             WHERE person_dental.person_id is null and person_anc.discharge <>'Y') anc_dental on person_anc.person_id = anc_dental.person_id
                         where out_region = 'N'  
-                        and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'
+                        and person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'
 
 
                         UNION
@@ -1446,8 +1525,6 @@ function get_row_Anc_Error_all($vn4digit) {
                         where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'  
 
 
-
-
 				   "
 
     ;
@@ -1464,42 +1541,42 @@ function get_row_Anc_Error_all($vn4digit) {
 function get_rows_Anc_Error_detail($vn4digit) {
 
     $sql = "select 'AN1141' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN1141'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
-				from person_anc_service ps_service
-				where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week is null or ps_service.pa_week ='')
-				and ps_service.vn like'$vn4digit%'
-				UNION
+                from person_anc_service ps_service
+                where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week is null or ps_service.pa_week ='')
+                and ps_service.vn like'$vn4digit%'
+                UNION
 
-				select 'AN9241' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9241'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
-				from person_anc_service ps_service
-				where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week < 4 or ps_service.pa_week > 45)
-				and ps_service.vn like'$vn4digit%'
-
-				UNION
-				select 'AN9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9901'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
-				from person_anc_service ps_service
-				left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id
-				where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no > 20
-				 and ps_service.vn like'$vn4digit%'
-
-				UNION
-				  select 'AN9299' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9299'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC   
-				  from ovst 
-				   INNER JOIN (	SELECT person_anc_id,anc_service_date , vn   
-					from person_anc_service
-				  GROUP BY concat(person_anc_id,anc_service_date) 
-				  HAVING count(concat(person_anc_id,anc_service_date)) >1 ) ps_anc on ovst.vn = ps_anc.vn 
-				  where ovst.vn like'$vn4digit%' 
-
-				  UNION
-
-				select 'AN9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9902'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
-				from person_anc_service ps_service
-				left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id
-				where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no is null
-				 and ps_service.vn like'$vn4digit%'
-
+                select 'AN9241' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9241'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
+                from person_anc_service ps_service
+                where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week < 4 or ps_service.pa_week > 45)
+                and ps_service.vn like'$vn4digit%'
 
                 UNION
+                select 'AN9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9901'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
+                from person_anc_service ps_service
+                left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id
+                where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no > 20
+                 and ps_service.vn like'$vn4digit%'
+
+                UNION
+                  select 'AN9299' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9299'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC   
+                  from ovst 
+                   INNER JOIN ( SELECT person_anc_id,anc_service_date , vn   
+                    from person_anc_service
+                  GROUP BY concat(person_anc_id,anc_service_date) 
+                  HAVING count(concat(person_anc_id,anc_service_date)) >1 ) ps_anc on ovst.vn = ps_anc.vn 
+                  where ovst.vn like'$vn4digit%' 
+
+                  UNION
+
+                select 'AN9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9902'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  
+                from person_anc_service ps_service
+                left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id
+                where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no is null
+                 and ps_service.vn like'$vn4digit%'
+
+                  
+                  UNION
                 select 'AN9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9903'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  
                 from person_anc
                 INNER JOIN (SELECT person_id,preg_no
@@ -1510,7 +1587,27 @@ function get_rows_Anc_Error_detail($vn4digit) {
                 and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit%'
 
 
+
                 UNION
+
+                select 'AN9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9905'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  
+                from person_anc
+                INNER JOIN (SELECT person_anc.person_anc_id , person_anc.person_id ,person_anc.preg_no  , count(person_anc_service.person_anc_id) as cc
+                , max(person_anc_service.anc_service_date) , max(person_anc_service.vn),oapp.nextdate,ROUND((DATEDIFF(CURDATE(),oapp.nextdate)/7),0) as 'Week_(Nextdate-Curdate)',
+                 person_anc_other_precare.precare_date , if(((DATEDIFF(CURDATE(),oapp.nextdate)/7) > 0 and person_anc_other_precare.precare_date is null and person_anc.labor_date is  null),'X','O') as chk 
+                from person_anc
+                LEFT JOIN person_anc_service on  person_anc.person_anc_id = person_anc_service.person_anc_id 
+                LEFT JOIN oapp on (SELECT vn from person_anc_service where person_anc_id = person_anc.person_anc_id ORDER BY person_anc_service.vn desc limit 1) = oapp.vn and oapp.clinic = '007'
+                LEFT JOIN person_anc_other_precare on person_anc.person_anc_id = person_anc_other_precare.person_anc_id and person_anc_other_precare.precare_date > oapp.nextdate
+                left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
+                where person_anc_service.anc_service_type_id = 1 and person_anc.discharge <> 'Y' and person_anc.out_region = 'N'
+                and oapp.nextdate < CURDATE()
+                GROUP BY person_anc.person_anc_id , person_anc.person_id, person_anc.preg_no 
+                HAVING chk = 'X'
+                ORDER BY person_anc.person_id ,person_anc.preg_no ) person_anc_chk on person_anc.person_anc_id = person_anc_chk.person_anc_id
+
+
+                    UNION
 
                select 'AN9990' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9990'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person_anc.person_anc_id)),0) as CC  
                 from person_anc_service ps_service
@@ -1525,7 +1622,8 @@ function get_rows_Anc_Error_detail($vn4digit) {
                                                  (concat(year(ps_service.anc_service_date),'-09-30' ))
                                                         else (concat((year(ps_service.anc_service_date)+1) ,'-09-30' )) end )  
                     )  
-                    and ps_service.vn like'$vn4digit%'
+                            and ps_service.vn like'$vn4digit%'
+
 
 
                     UNION
@@ -1557,8 +1655,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                     and (TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) > (SELECT week_max from person_anc_preg_week where person_anc_preg_week_id = 1))
                     HAVING week_anc = 'NO' or person_anc.pre_labor_service1_date is null
                     ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
-                    where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'
-
+                     where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'
 
 
                     UNION
@@ -1578,7 +1675,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                                         )
                             )
                                 FROM person_anc_service 
-                                where anc_service_number = 2 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id
+                                where anc_service_number = 2 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 2 )  , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id
                                 )
                       ELSE
                                 if(person_anc.pre_labor_service2_date is null,'NULL','Yes')
@@ -1590,7 +1687,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                     HAVING week_anc = 'NO' or person_anc.pre_labor_service2_date is null
                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
 
 
                     UNION
@@ -1612,7 +1709,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
 
                             )
                                 FROM person_anc_service 
-                                where anc_service_number = 3 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 3 )  , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id
+                                where anc_service_number = 3 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id
                                 )
                             ELSE
                                 if(person_anc.pre_labor_service3_date is null,'NULL','Yes')
@@ -1624,7 +1721,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service3_date is null
                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'
+                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'
 
 
                         UNION
@@ -1639,7 +1736,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                                                 SELECT if(count(person_anc1.person_anc_id)>0,'Yes','NO')
                                                 from person_anc_other_precare
                                                 inner JOIN person_anc person_anc1 on person_anc_other_precare.person_anc_id = person_anc1.person_anc_id
-                                                where precare_no = 4 and if(TIMESTAMPDIFF(week,person_anc1.lmp,person_anc_other_precare.precare_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 4 )  , 'Y','N') = 'Y'
+                                                where precare_no = 4 and if(TIMESTAMPDIFF(week,person_anc1.lmp,person_anc_other_precare.precare_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) , 'Y','N') = 'Y'
                                                  and person_anc1.person_anc_id = person_anc.person_anc_id
                                             )
                                 )
@@ -1656,7 +1753,8 @@ function get_rows_Anc_Error_detail($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service4_date is null
                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+
 
 
                         UNION
@@ -1664,7 +1762,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                         SELECT  'AN9975' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9975'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC    
                         from person_anc
                             INNER JOIN (SELECT * ,TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) as wpa_now,
-                        (case when TIMESTAMPDIFF(week,person_anc.lmp,person_anc.pre_labor_service5_date) not BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 5 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 5 ) 
+                        (case when TIMESTAMPDIFF(week,person_anc.lmp,person_anc.pre_labor_service5_date) not BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 5 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 5 )  
                             THEN 
                                     (SELECT if(count(person_anc_id)>0,'Yes',                
                                             (
@@ -1688,7 +1786,8 @@ function get_rows_Anc_Error_detail($vn4digit) {
                         HAVING week_anc = 'NO' or person_anc.pre_labor_service5_date is null
                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id
                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid
-                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'
+
 
                         UNION
 
@@ -1700,7 +1799,7 @@ function get_rows_Anc_Error_detail($vn4digit) {
                                             left JOIN person on ovst.hn = person.patient_hn) person_dental on person_anc.person_id= person_dental.person_id
                                             WHERE person_dental.person_id is null and person_anc.discharge <>'Y') anc_dental on person_anc.person_id = anc_dental.person_id
                         where out_region = 'N'  
-                        and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'
+                        and person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'
 
 
                         UNION
@@ -1714,13 +1813,12 @@ function get_rows_Anc_Error_detail($vn4digit) {
                          and concat(RIGHT((DATE_FORMAT(person_anc.labor_date ,'%Y') +543),2),DATE_FORMAT(person_anc.labor_date ,'%m') ) like'$vn4digit'
 
 
-
                          UNION
 
                          select 'AN9982' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9982'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  
                         from person_anc ps_anc
                         left join patient on (select cid from person where person_id = ps_anc.person_id) = patient.cid
-                        where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'  
+                        where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'   
                          
 
 				 order by CC desc , ERROR_CODE ,ERROR_CODE";
@@ -2088,7 +2186,7 @@ function get_row_Drug_opd_Error_all($vn4digit) {
 					left join ovst on er_regist_oper.vn = ovst.vn 
 					left join patient on ovst.hn = patient.hn 
 				  left join opdscreen on er_regist_oper.vn = opdscreen.vn 
-				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode = '1900485' 
+				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode in( '1900485' , '1480175')  
 				  left join drugitems on opitemrece.icode = drugitems.icode 
 				   where er_oper_code ='176' and opitemrece.vn is null and er_regist_oper.vn like'$vn4digit%' 
 
@@ -2152,7 +2250,7 @@ function get_rows_Drug_opd_Error_detail($vn4digit) {
 					left join ovst on er_regist_oper.vn = ovst.vn 
 					left join patient on ovst.hn = patient.hn 
 				  left join opdscreen on er_regist_oper.vn = opdscreen.vn 
-				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode = '1900485' 
+				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode in( '1900485' , '1480175')
 				  left join drugitems on opitemrece.icode = drugitems.icode 
 				   where er_oper_code ='176' and opitemrece.vn is null and er_regist_oper.vn like'$vn4digit%' 
 				 
@@ -3801,12 +3899,12 @@ function get_rows_Charge_opd_Error_detail_list($error_code, $vn4digit, $xls) {
 
         $query2 = mysql_query($sql1 . " like'$vn4digit%' group by vn") or die(mysql_error());
       }else {
-            if ($error_code == 'CR9903') {
+            if ($error_code == 'CR9901') {
 
-                $query2 = mysql_query($sql1 . " like'$vn4digit%' ") or die(mysql_error());
+                $query2 = mysql_query($sql1 . " and  like'$vn4digit%' ") or die(mysql_error());
 
             }else{               
-                    $query2 = mysql_query($sql1 . " and vn_stat.vn like'$vn4digit%'") or die(mysql_error());
+                    $query2 = mysql_query($sql1 . "  like'$vn4digit%'") or die(mysql_error());
                 }
         }
 
@@ -3849,6 +3947,32 @@ function get_row_Procedure_opd_Error_all($vn4digit) {
 				   and (ovst_vaccine.person_vaccine_id not in('31','32','33','34','35','36','37','38','39','40','50','51','52','53','54') or ovst_vaccine.person_vaccine_id is null)
 				   and er_regist_oper.vn like'$vn4digit%' 
 
+            UNION
+
+            select 'PX9001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9001'  ) as 'ERROR_DETAIL' ,  ifnull(count(vn),0) as CC 
+            from health_med_service 
+            inner JOIN (SELECT health_med_service_id, count(health_med_operation_item_id) as cc
+            from health_med_service_operation 
+            where health_med_service_id in(SELECT  health_med_service_id 
+            FROM health_med_service_treatment 
+            where  health_med_treatment_subtype_id = 5 )
+            and  health_med_operation_item_id  in(7,8,9,11,16)
+            GROUP BY health_med_service_id 
+            HAVING cc < 5 )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id 
+            where vn like'$vn4digit%' 
+
+            UNION  
+            select 'PX9002' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9002'  ) as 'ERROR_DETAIL' ,  ifnull(count(health_med_service.vn),0) as CC 
+            from health_med_service 
+            inner JOIN (SELECT DISTINCT(health_med_service_id)
+            from health_med_service_operation 
+            where health_med_service_id in(SELECT  DISTINCT(health_med_service_id) 
+            FROM health_med_service_treatment 
+            where  health_med_treatment_subtype_id = 5 )
+             )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id 
+            left join ovst on health_med_service.vn = ovst.vn
+            left join patient on ovst.hn = patient.hn
+            where patient.sex = 1  and health_med_service.vn like '$vn4digit%' 
 
 
 				";
@@ -3874,6 +3998,32 @@ function get_rows_Procedure_opd_Error_detail($vn4digit) {
 			   and er_regist_oper.vn like'$vn4digit%' 
 
 
+            UNION
+
+            select 'PX9001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9001'  ) as 'ERROR_DETAIL' ,  ifnull(count(vn),0) as CC 
+            from health_med_service 
+            inner JOIN (SELECT health_med_service_id, count(health_med_operation_item_id) as cc
+            from health_med_service_operation 
+            where health_med_service_id in(SELECT  health_med_service_id 
+            FROM health_med_service_treatment 
+            where  health_med_treatment_subtype_id = 5 )
+            and  health_med_operation_item_id  in(7,8,9,11,16)
+            GROUP BY health_med_service_id 
+            HAVING cc < 5 )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id 
+            where vn like'$vn4digit%' 
+
+            UNION  
+            select 'PX9002' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9002'  ) as 'ERROR_DETAIL' ,  ifnull(count(health_med_service.vn),0) as CC 
+            from health_med_service 
+            inner JOIN (SELECT DISTINCT(health_med_service_id)
+            from health_med_service_operation 
+            where health_med_service_id in(SELECT  DISTINCT(health_med_service_id) 
+            FROM health_med_service_treatment 
+            where  health_med_treatment_subtype_id = 5 )
+             )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id 
+            left join ovst on health_med_service.vn = ovst.vn
+            left join patient on ovst.hn = patient.hn
+            where patient.sex = 1  and health_med_service.vn like '$vn4digit%'
 
 				 order by CC desc , ERROR_CODE ";
     //echo $sql;	
@@ -3925,8 +4075,15 @@ function get_rows_Procedure_opd_Error_detail_list($error_code, $vn4digit, $xls) 
 
                                       ";
     $i = 0;
+    //check Error Code for get sql detail
+    if($error_code=='PX9901'){
+          $query2 = mysql_query($sql1 . " and er_regist_oper.vn like'$vn4digit%'");
+    }else{
+         
+          $query2 = mysql_query($sql1 . " like'$vn4digit%'");
+    }
+   
 
-    $query2 = mysql_query($sql1 . " and er_regist_oper.vn like'$vn4digit%'");
     $rows = mysql_num_rows($query2);
     while ($result = mysql_fetch_array($query2)) {
         $ptname = $result['ptname'];
@@ -3952,6 +4109,8 @@ function get_rows_Procedure_opd_Error_detail_list($error_code, $vn4digit, $xls) 
     }
     return $tb . $tb_footer;
 }
+
+
 
 function get_row_Ncd_screen_Error_all($vn4digit) {
 
@@ -4097,7 +4256,7 @@ function get_row_Ncd_screen_Error_all($vn4digit) {
                       left join person_dmht_screen_summary on 
                          person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
                       left join person on person_dmht_screen_summary.person_id= person.person_id
-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight > 250
+                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight  not BETWEEN '10' and '250'
                         and person_dmht_risk_screen_head.screen_date between  $date_stage_ment
 
 
@@ -4121,6 +4280,16 @@ function get_row_Ncd_screen_Error_all($vn4digit) {
                     LEFT JOIN person_dmht_screen_summary on person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
                     where  screen_date between  $date_stage_ment ) person_dnht_chk on person.person_id = person_dnht_chk.person_id
                     and (person.death_date is not null or person.death = 'Y') and person.death_date <= screen_date  
+
+                   UNION
+
+                    select 'NC9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'NC9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(person.person_id),0) as CC 
+                      from person_dmht_risk_screen_head
+                      left join person_dmht_screen_summary on 
+                         person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
+                      left join person on person_dmht_screen_summary.person_id= person.person_id
+                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_height  not BETWEEN '30' and '250'
+                        and person_dmht_risk_screen_head.screen_date between  $date_stage_ment
 
 				";
     //echo $sql;	
@@ -4277,7 +4446,7 @@ function get_rows_Ncd_screen_Error_detail($vn4digit) {
                       left join person_dmht_screen_summary on 
                          person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
                       left join person on person_dmht_screen_summary.person_id= person.person_id
-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight > 250
+                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight  not BETWEEN '10' and '250'
                         and person_dmht_risk_screen_head.screen_date between  $date_stage_ment
 
 
@@ -4302,6 +4471,18 @@ function get_rows_Ncd_screen_Error_detail($vn4digit) {
                     LEFT JOIN person_dmht_screen_summary on person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
                     where  screen_date between  $date_stage_ment ) person_dnht_chk on person.person_id = person_dnht_chk.person_id
                     and (person.death_date is not null or person.death = 'Y') and person.death_date <= screen_date  
+
+                
+                UNION
+
+                    select 'NC9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'NC9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(person.person_id),0) as CC 
+                      from person_dmht_risk_screen_head
+                      left join person_dmht_screen_summary on 
+                         person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id
+                      left join person on person_dmht_screen_summary.person_id= person.person_id
+                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_height  not BETWEEN '30' and '250'
+                        and person_dmht_risk_screen_head.screen_date between  $date_stage_ment
+
 
 				 order by CC desc , ERROR_CODE ";
     //echo $sql;	
@@ -4422,6 +4603,23 @@ function get_row_Home_Error_all($vn4digit) {
 			      where vms.village_id <> 1                             
 			      group by vms.house_id                                                       
 			      having count(vms.village_id) > 1 order by vms.village_id) hous_chk on house.house_id = hous_chk.house_id
+
+
+                  UNION
+
+                 select 'HO9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'HO9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(house.house_id),0) as CC 
+                  from house
+                  left join village on (house.village_id) = village.village_id
+                  LEFT JOIN (SELECT  person.house_id,village_moo,GROUP_CONCAT(DISTINCT(house.address)) as address, count(person.person_id) as cc , sum(if(death='Y',1,0)) as c_death  , 
+                 (count(person_id) - sum(if(death='Y',1,0))) as chk , GROUP_CONCAT(DISTINCT(person.person_id)) as person_id
+                from person 
+                LEFT JOIN house on person.house_id = house.house_id
+                LEFT JOIN village on house.village_id = village.village_id
+                GROUP BY person.house_id
+                HAVING chk = 0 ) vms on house.house_id = vms.house_id
+                 where house.village_id <> 1 and  vms.house_id is not null 
+               
+
 					 
 				  ";
 
@@ -4468,7 +4666,20 @@ function get_rows_Home_Error_detail($vn4digit) {
                                                 where vms.village_id <> 1                             
                                                 group by vms.house_id                                                       
                                                 having count(*) > 1 order by vms.village_id) hous_chk on house.house_id = hous_chk.house_id
+                  UNION
 
+                 select 'HO9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'HO9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(house.house_id),0) as CC 
+                  from house
+                  left join village on (house.village_id) = village.village_id
+                  LEFT JOIN (SELECT  person.house_id,village_moo,GROUP_CONCAT(DISTINCT(house.address)) as address, count(person.person_id) as cc , sum(if(death='Y',1,0)) as c_death  , 
+                 (count(person_id) - sum(if(death='Y',1,0))) as chk , GROUP_CONCAT(DISTINCT(person.person_id)) as person_id
+                from person 
+                LEFT JOIN house on person.house_id = house.house_id
+                LEFT JOIN village on house.village_id = village.village_id
+                GROUP BY person.house_id
+                HAVING chk = 0 ) vms on house.house_id = vms.house_id
+                 where house.village_id <> 1 and  vms.house_id is not null 
+                   
 
 					UNION
 
@@ -4477,10 +4688,15 @@ function get_rows_Home_Error_detail($vn4digit) {
   					LEFT JOIN (SELECT house_id from village_organization_member_service group by house_id) vms on house.house_id = vms.house_id
   					where vms.house_id is null and house.village_id <> 1
 
-				  order by CC desc , ERROR_CODE ";
+				  order by CC desc , ERROR_CODE 
 
 
-    //echo $sql;	
+
+
+                  ";
+
+
+   // echo $sql;	
     $CC = 0;
     $query = mysql_query($sql);
     $aherf = "";
@@ -4530,6 +4746,19 @@ function get_rows_Home_Error_detail_list($error_code, $vn4digit, $xls) {
                                           <th>ชื่อ อสม.</th>
                                           <th>รหัสบ้าน</th>
                                     </tr> ";
+        }elseif($error_code=="HO9904"){
+           $tb = $tb_title . "     <tr>
+                                          <th>#</th>
+                                          <th>บ้านเลขที่ </th>
+                                          <th>หมู่</th>
+                                          <th>บ้าน</th>
+                                          <th>เลขทะเบียนบ้าน</th>
+                                          <th>PID</th>
+                                          <th>ชื่อ-สกุล</th>
+                                          <th>รหัสบ้าน</th>
+                                    </tr> ";
+
+
         }else{
         $tb = $tb_title . " 	<tr>
                                           <th>#</th>
@@ -4572,6 +4801,20 @@ function get_rows_Home_Error_detail_list($error_code, $vn4digit, $xls) {
                                       <td>$ps_name </td>
                                       <td>$house_id</td>
                                   </tr> "; 
+        }elseif($error_code=="HO9904"){
+                    $person_id = $result['person_id'];
+                    $person_name = $result['pt_name'];
+                        $tb = $tb . "<tr>
+                                      <td >$i</td>                                     
+                                      <td>$address </td>
+                                      <td>$village_moo</td>
+                                      <td>$village_name</td>
+                                      <td>$census_id</td>
+                                      <td>$person_id </td>
+                                      <td>$person_name </td>
+                                      <td>$house_id</td>
+                                  </tr> "; 
+
         }else{
         $tb = $tb . "           <tr>
                                       <td >$i</td>                                     
@@ -4618,7 +4861,19 @@ function get_row_Community_service_Error_all($vn4digit) {
 				GROUP BY concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)
 				HAVING count(concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)) >1 )  community
 				on ovst.vn = community.vn
-				where ovst.vn like'$vn4digit%' ";
+				where ovst.vn like'$vn4digit%'  
+
+            UNION 
+
+
+                select 'CS9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'CS9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(ovst.vn),0) as CC 
+                FROM ovst
+                        inner join  opdscreen  on ovst.vn = opdscreen.vn
+                        LEFT JOIN ovst_community_service on opdscreen.vn = ovst_community_service.vn                                        
+                        where (cc LIKE '%เยี่ยมบ้าน%'   or cc LIKE 'เยี่ยมบ้าน%' or cc LIKE '%เยี่ยม%'   )  and ovst_community_service.vn is null and  ovst.vn  like'$vn4digit%' 
+
+
+             ";
 
 
 
@@ -4645,6 +4900,19 @@ function get_rows_Community_service_Error_detail($vn4digit) {
 				HAVING count(concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)) >1 )  community
 				on ovst.vn = community.vn
 				where ovst.vn like'$vn4digit%' 
+
+
+            UNION 
+
+              
+
+                select 'CS9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'CS9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(ovst.vn),0) as CC 
+                FROM ovst
+                        inner join  opdscreen  on ovst.vn = opdscreen.vn
+                        LEFT JOIN ovst_community_service on opdscreen.vn = ovst_community_service.vn                                        
+                        where (cc LIKE '%เยี่ยมบ้าน%'   or cc LIKE 'เยี่ยมบ้าน%' or cc LIKE '%เยี่ยม%'   )  and ovst_community_service.vn is null and  ovst.vn  like'$vn4digit%' 
+
+
 				  order by CC desc , ERROR_CODE ";
 
 
@@ -5164,8 +5432,12 @@ function get_row_Epi_Error_all($vn4digit) {
                                                 ELSE
                                                     (case when wbc_vaccine.export_vaccine_code in('R11','R12','R21','R22','R23') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z258') 
                                                         ELSE
-                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) END) 
+                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) 
+                                                                    ELSE
+                                                                     (case when wbc_vaccine.export_vaccine_code in('D21','D22','D23') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246','Z241') GROUP BY vn) 
+                                                                     END)
                                                             end) 
+                                                    end) 
                                             
                                                 end)    
                                         end) 
@@ -5248,15 +5520,19 @@ function get_row_Epi_Error_all($vn4digit) {
 
                 select 'EP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP9902'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                     from ovst
-                    inner join (
-                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk 
+                     inner join (
+                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk ,person_vaccine.vaccine_name ,village_student.person_id 
                     from village_student_vaccine
                     left join village_student on village_student_vaccine.village_student_id =  village_student.village_student_id
                     left join village_student_vaccine_list on village_student_vaccine.village_student_vaccine_id = village_student_vaccine_list.village_student_vaccine_id
-                    left join ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn
+                    LEFT JOIN student_vaccine on village_student_vaccine_list.student_vaccine_id  = student_vaccine.student_vaccine_id
+                    INNER JOIN ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn
+                    left join person_vaccine on ovst_vaccine.person_vaccine_id = person_vaccine.person_vaccine_id
+                    where  student_vaccine.export_vaccine_code = person_vaccine.export_vaccine_code
                     HAVING vn_chk is not null
-                    ) student_vaccine on student_vaccine.vn =  ovst.vn
-                    where ovst.vn like '$vn4digit%'
+                    ) student_vaccine_chk on student_vaccine_chk.vn =  ovst.vn
+                    LEFT JOIN patient on ovst.hn = patient.hn 
+                    where ovst.vn   like '$vn4digit%'
 
 
 
@@ -5313,9 +5589,9 @@ function get_rows_Epi_Error_detail($vn4digit) {
 
             UNION
 
-                select 'EP2001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP2001'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+             select 'EP2001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP2001'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
 
-                 from ovst 
+                from ovst 
                 INNER JOIN (select person_wbc_service.vn,wbc_vaccine.wbc_vaccine_name, person_wbc_vaccine_detail.wbc_vaccine_id ,
                    (case when wbc_vaccine.export_vaccine_code in('010') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z232')
                     else
@@ -5329,8 +5605,12 @@ function get_rows_Epi_Error_detail($vn4digit) {
                                                 ELSE
                                                     (case when wbc_vaccine.export_vaccine_code in('R11','R12','R21','R22','R23') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z258') 
                                                         ELSE
-                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) END) 
+                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) 
+                                                                    ELSE
+                                                                     (case when wbc_vaccine.export_vaccine_code in('D21','D22','D23') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246','Z241') GROUP BY vn) 
+                                                                     END)
                                                             end) 
+                                                    end) 
                                             
                                                 end)    
                                         end) 
@@ -5415,14 +5695,18 @@ function get_rows_Epi_Error_detail($vn4digit) {
                 select 'EP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP9902'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                     from ovst
                     inner join (
-                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk 
+                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk ,person_vaccine.vaccine_name ,village_student.person_id 
                     from village_student_vaccine
                     left join village_student on village_student_vaccine.village_student_id =  village_student.village_student_id
                     left join village_student_vaccine_list on village_student_vaccine.village_student_vaccine_id = village_student_vaccine_list.village_student_vaccine_id
-                    left join ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn
+                    LEFT JOIN student_vaccine on village_student_vaccine_list.student_vaccine_id  = student_vaccine.student_vaccine_id
+                    INNER JOIN ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn
+                    left join person_vaccine on ovst_vaccine.person_vaccine_id = person_vaccine.person_vaccine_id
+                    where  student_vaccine.export_vaccine_code = person_vaccine.export_vaccine_code
                     HAVING vn_chk is not null
-                    ) student_vaccine on student_vaccine.vn =  ovst.vn
-                    where ovst.vn like '$vn4digit%'
+                    ) student_vaccine_chk on student_vaccine_chk.vn =  ovst.vn
+                    LEFT JOIN patient on ovst.hn = patient.hn 
+                    where ovst.vn  like '$vn4digit%'
 
 
                  order by CC desc , ERROR_CODE ";
@@ -5520,9 +5804,9 @@ function get_rows_Epi_Error_detail_list($error_code,$vn4digit, $xls) {
                    $Items = "บัญชี 3";
                 }else{
                  if($result['Items']=='EPI'){
-                        $Items = "บัญชี 4 ";
+                        $Items = "บัญชี 4-5";
                     }else{
-                            $Items = "บัญชี 5";
+                             $Items = "จากที่อื่น";
                         }
                 }
         }
@@ -5654,6 +5938,24 @@ function get_row_Nutrition_Error_all($vn4digit) {
     //echo ' -det30 =  '.$det30 . '-/- dst230 ='.$dst230 ;
 
 
+    //-------start 60 month  --------------
+    $dst60 = date_create($first_day);
+    date_add($dst60, date_interval_create_from_date_string('-60 month'));
+    $dst60 =  date_format($dst60, 'Y-m-d');
+
+    $det60 = date_create($dst60);
+    date_add($det60, date_interval_create_from_date_string('-29 days'));
+    $det60 =  date_format($det60, 'Y-m-d');  
+
+    $dst260 = date_create($last_day);
+    date_add($dst260, date_interval_create_from_date_string('-60 month'));
+    $dst260 =  date_format($dst260, 'Y-m-d'); 
+
+    $det260 = date_create($dst260);
+    date_add($det260, date_interval_create_from_date_string('-29 days'));
+    $det260 =  date_format($det260, 'Y-m-d');  
+    //-------- END 60 Month
+    
 
         
    // $det =  DATE_ADD(@ds1, INTERVAL -299 DAY) ;
@@ -5709,7 +6011,22 @@ function get_row_Nutrition_Error_all($vn4digit) {
 
 
 
+
             UNION
+
+
+            select 'NU9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC
+            FROM person 
+             LEFT JOIN (SELECT nutrition_date ,person_epi.person_id
+            from person_epi_nutrition
+            LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id
+            ) person_chk on person.person_id = person_chk.person_id 
+            and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)
+            where birthdate between '$det60' and '$dst260' and person.house_regist_type_id in(1,3) and person_chk.nutrition_date is null
+
+
+            UNION
+
 
             select 'NU1190' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU1190'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC
             from person
@@ -5952,6 +6269,25 @@ function get_rows_Nutrition_Error_detail($vn4digit) {
 
 
 
+    //-------start 60 month  --------------
+    $dst60 = date_create($first_day);
+    date_add($dst60, date_interval_create_from_date_string('-60 month'));
+    $dst60 =  date_format($dst60, 'Y-m-d');
+
+    $det60 = date_create($dst60);
+    date_add($det60, date_interval_create_from_date_string('-29 days'));
+    $det60 =  date_format($det60, 'Y-m-d');  
+
+    $dst260 = date_create($last_day);
+    date_add($dst260, date_interval_create_from_date_string('-60 month'));
+    $dst260 =  date_format($dst260, 'Y-m-d'); 
+
+    $det260 = date_create($dst260);
+    date_add($det260, date_interval_create_from_date_string('-29 days'));
+    $det260 =  date_format($det260, 'Y-m-d');  
+    //-------- END 60 Month
+
+
     $sql = " select 'NU9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC
             FROM person 
             LEFT JOIN (SELECT nutrition_date ,person_wbc.person_id
@@ -5999,6 +6335,20 @@ function get_rows_Nutrition_Error_detail($vn4digit) {
             ) person_chk on person.person_id = person_chk.person_id 
             and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 42 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 42 month)), INTERVAL 29 day)
             where birthdate between '$det42' and '$dst242' and person.house_regist_type_id in(1,3) and person_chk.nutrition_date is null
+
+
+
+            UNION
+
+
+            select 'NU9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC
+            FROM person 
+             LEFT JOIN (SELECT nutrition_date ,person_epi.person_id
+            from person_epi_nutrition
+            LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id
+            ) person_chk on person.person_id = person_chk.person_id 
+            and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)
+            where birthdate between '$det60' and '$dst260' and person.house_regist_type_id in(1,3) and person_chk.nutrition_date is null
 
 
 
@@ -6248,6 +6598,25 @@ function get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {
 
 
 
+    //-------start 60 month  --------------
+    $dst60 = date_create($first_day);
+    date_add($dst60, date_interval_create_from_date_string('-60 month'));
+    $dst60 =  date_format($dst60, 'Y-m-d');
+
+    $det60 = date_create($dst60);
+    date_add($det60, date_interval_create_from_date_string('-29 days'));
+    $det60 =  date_format($det60, 'Y-m-d');  
+
+    $dst260 = date_create($last_day);
+    date_add($dst260, date_interval_create_from_date_string('-60 month'));
+    $dst260 =  date_format($dst260, 'Y-m-d'); 
+
+    $det260 = date_create($dst260);
+    date_add($det260, date_interval_create_from_date_string('-29 days'));
+    $det260 =  date_format($det260, 'Y-m-d');  
+    //-------- END 60 Month
+
+
     $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
     $query = mysql_query($sql);
    
@@ -6269,6 +6638,10 @@ function get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {
 
         case 'NU9904':
              $sql1 = $sql1." and  birthdate between '$det42' and '$dst242' GROUP BY person.person_id ";
+            break;
+
+        case 'NU9906':
+             $sql1 = $sql1." and  birthdate between '$det60' and '$dst260' GROUP BY person.person_id ";
             break;
 
         case 'NU9905':
@@ -6317,6 +6690,19 @@ function get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {
                                 ) person_chk on person.person_id = person_chk.person_id 
                                 and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 42 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 42 month)), INTERVAL 29 day)
                                 where birthdate between '$det42' and '$dst242'  and person.house_regist_type_id in(1,3) 
+
+                    UNION
+
+                    SELECT '60' as items,person.* ,person_chk.nutrition_date
+                    FROM person 
+                                LEFT JOIN (SELECT nutrition_date ,person_epi.person_id
+                                from person_epi_nutrition
+                                LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id
+                                ) person_chk on person.person_id = person_chk.person_id 
+                                and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)
+                                where birthdate between '$det60' and '$dst260'  and person.house_regist_type_id in(1,3) 
+
+
                     ) person_chk on ovst.vstdate = person_chk.nutrition_date and ovst.hn = person_chk.patient_hn
                     LEFT JOIN pp_special on ovst.vn = pp_special.vn
                     where pp_special.vn is null 
@@ -6442,6 +6828,69 @@ function get_rows_Special_pp_Error_all($vn4digit) {
                 left JOIN person on ovst_seq.pcu_person_id = person.person_id
                 where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')
                 and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  
+
+
+                UNION
+
+                select 'SP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9902'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code 
+                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')
+                and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  
+
+                UNION
+
+                select 'SP9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9903'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code 
+                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')
+                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%'  
+
+
+                UNION
+
+                select 'SP9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')
+                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' 
+
+                UNION
+
+                select 'SP9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9905'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC 
+                from pp_special 
+                INNER JOIN ovst on  pp_special.vn = ovst.vn
+                INNER JOIN patient on ovst.hn = patient.hn
+                where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )
+                AND DATEDIFF( (SELECT ov1.vstdate 
+                from pp_special pp1
+                INNER JOIN ovst ov1 on  pp1.vn = ov1.vn
+                where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))
+                and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1),ovst.vstdate) NOT BETWEEN'14' and '30' and   pp_special.vn like'$vn4digit%'  
+
+
+                UNION
+
+                select 'SP9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC 
+            from pp_special 
+            INNER JOIN ovst on  pp_special.vn = ovst.vn
+            INNER JOIN patient on ovst.hn = patient.hn
+            where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )
+             and (SELECT pp1.vn 
+            from pp_special pp1
+            INNER JOIN ovst ov1 on  pp1.vn = ov1.vn
+            where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))
+            and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1) is null and   pp_special.vn like'$vn4digit%'  
+
+
               ";
 
 
@@ -6500,6 +6949,69 @@ function get_rows_Special_pp_Error_detail($vn4digit) {
 
 
 
+                UNION
+
+                select 'SP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9902'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code 
+                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')
+                and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  
+
+
+
+                UNION
+
+                select 'SP9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9903'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code 
+                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')
+                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' 
+
+
+                UNION
+
+                select 'SP9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC 
+                from pp_special 
+                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id
+                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn
+                left JOIN person on ovst_seq.pcu_person_id = person.person_id
+                where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')
+                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' 
+
+
+                UNION
+
+                select 'SP9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9905'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC 
+                from pp_special 
+                INNER JOIN ovst on  pp_special.vn = ovst.vn
+                INNER JOIN patient on ovst.hn = patient.hn
+                where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )
+                AND DATEDIFF( (SELECT ov1.vstdate 
+                from pp_special pp1
+                INNER JOIN ovst ov1 on  pp1.vn = ov1.vn
+                where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))
+                and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1),ovst.vstdate) NOT BETWEEN'14' and '30' and   pp_special.vn like'$vn4digit%'  
+
+
+
+                UNION
+
+                select 'SP9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC 
+            from pp_special 
+            INNER JOIN ovst on  pp_special.vn = ovst.vn
+            INNER JOIN patient on ovst.hn = patient.hn
+            where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )
+             and (SELECT pp1.vn 
+            from pp_special pp1
+            INNER JOIN ovst ov1 on  pp1.vn = ov1.vn
+            where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))
+            and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1) is null and   pp_special.vn like'$vn4digit%'  
 
                  order by CC desc , ERROR_CODE ";
     //echo $sql;    
@@ -7477,7 +7989,7 @@ function get_rows_Service_Error_all($vn4digit) {
           select 'SE9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SE9902'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct ovst.vn),0) as CC
             from ovst
             left join spclty on spclty.spclty = ovst.spclty
-                  where spclty.spclty is null  and ovst.vn like'$vn4digit%' 
+                  where ovst.spclty is null  and ovst.vn like'$vn4digit%' 
 
                 ";
    //echo $sql;    
@@ -7505,7 +8017,7 @@ function get_rows_Service_Error_detail($vn4digit) {
           select 'SE9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SE9902'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct ovst.vn),0) as CC
             from ovst
             left join spclty on spclty.spclty = ovst.spclty
-                  where spclty.spclty is null  and ovst.vn like'$vn4digit%' 
+                  where ovst.spclty is null  and ovst.vn like'$vn4digit%' 
             
                  order by CC desc , ERROR_CODE ";
     //echo $sql;    
@@ -7593,6 +8105,131 @@ function get_rows_Service_Error_detail_list($error_code, $vn4digit, $xls) {
 
 
 
+
+
+
+function get_rows_Prenatal_Error_all($vn4digit) {
+    $date_stage_ment = get_month_stagement($vn4digit);
+    $sql = "select 'PR9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PR9901'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct person_anc.person_id),0) as CC
+           from person_anc_service 
+        left JOIN person_anc on person_anc_service.person_anc_id = person_anc.person_anc_id
+        INNER JOIN (SELECT * from lab_head where form_name like'LAB_ANC%' and confirm_report='Y') lab_head  on person_anc_service.vn = lab_head.vn 
+        LEFT JOIN person_anc_lab on person_anc_service.person_anc_service_id = person_anc_lab.person_anc_service_id
+        where person_anc_lab.anc_lab_result is null and person_anc.lmp BETWEEN  $date_stage_ment 
+
+
+                ";
+   //echo $sql;    
+    $CC = 0;
+    $query = mysql_query($sql);
+    $rows = mysql_num_rows($query) or die(mysql_error());
+    while ($result = mysql_fetch_array($query)) {
+        $CC = $CC + number_format($result['CC']);
+    }
+    return $CC;
+}
+
+
+
+
+function get_rows_Prenatal_Error_detail($vn4digit) {
+    $date_stage_ment = get_month_stagement($vn4digit);
+    $sql = "select 'PR9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PR9901'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct person_anc.person_id),0) as CC
+           from person_anc_service 
+        left JOIN person_anc on person_anc_service.person_anc_id = person_anc.person_anc_id
+        INNER JOIN (SELECT * from lab_head where form_name like'LAB_ANC%' and confirm_report='Y') lab_head  on person_anc_service.vn = lab_head.vn 
+        LEFT JOIN person_anc_lab on person_anc_service.person_anc_service_id = person_anc_lab.person_anc_service_id
+        where person_anc_lab.anc_lab_result is null and person_anc.lmp BETWEEN  $date_stage_ment
+
+        
+         
+            
+                 order by CC desc , ERROR_CODE ";
+    //echo $sql;    
+    $CC = 0;
+    $query = mysql_query($sql) or die(mysql_error());
+    $aherf = "";
+    //$rows = mysql_num_rows($query);
+    while ($result = mysql_fetch_array($query)) {
+        $ERROR_CODE = $result['ERROR_CODE'];
+        $ERROR_DETAIL = $result['ERROR_DETAIL'];
+        $SHOW_ERROR = "< " . $ERROR_CODE . " > " . $ERROR_DETAIL;
+        $CC = number_format($result['CC']);
+        if ($CC == 0) {
+            $aherf = $aherf . "<span class='list-group-item list-group-item-success'> $SHOW_ERROR  <span class='badge'>$CC</span></span>";
+        } else {
+            $aherf = $aherf . "<a href='prenatal_detail.php?err=$ERROR_CODE&vn=$vn4digit' class='list-group-item list-group-item-danger'> $SHOW_ERROR  <span class='badge'>$CC</span></a>";
+        }
+    }
+    return $aherf;
+}
+
+
+
+
+
+
+
+function get_rows_Prenatal_Error_detail_list($error_code, $vn4digit, $xls) {
+
+    $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
+    $query = mysql_query($sql);
+
+    while ($result = mysql_fetch_array($query)) {
+        $sql1 = $result['sql_script'];
+    }
+    //echo $sql1;
+    if ($xls == "export") {
+        $tb_title = "";
+        $tb_footer = "";
+    } else {
+        $tb_title = "<TABLE class='table'>";
+        $tb_footer = "</TABLE>";
+    }
+
+    $tb = $tb_title . "     <tr>
+                                      <th>#</th>
+                                      <th>PID</th>
+                                      <th>ชื่อ - สกุล </th>
+                                      <th>CID</th>
+                                      <th>ครรภ์ที่</th>
+                                      <th>วันที่รับบริการ</th>
+                                      <th>เวลารับบริการ</th>
+                                                                           
+                                 </tr>
+
+                                      ";
+    $i = 0;
+    //echo $sql1;
+
+    $query2 = mysql_query($sql1 ." BETWEEN ". get_month_stagement($vn4digit));
+
+
+    $rows = mysql_num_rows($query2);
+    while ($result = mysql_fetch_array($query2)) {
+        $ptname = $result['ptname'];
+        $vstdate = get_date_show($result['vstdate']);
+        $vsttime = $result['vsttime'];
+        $person_id = $result['person_id'];
+        $cid = $result['cid'];
+        $preg_no = $result['preg_no'];
+        $i = $i + 1;
+        //$data   = $data. $i  . " | " . $person_id ." | ".$ptname." | ". $cid  . " | ".get_date_show($DATEServ).'<br>';
+        $tb = $tb . "           <tr>
+                                      <td >$i</td>  
+                                      <td>$person_id </td>                                   
+                                      <td>$ptname </td>
+                                      <td>$cid</td>
+                                      <td>$preg_no</td>
+                                      <td>$vstdate</td>
+                                      <td>$vsttime</td>                                      
+
+                                  </tr> 
+
+                                  ";
+    }
+    return $tb . $tb_footer;
+}
 
 
 

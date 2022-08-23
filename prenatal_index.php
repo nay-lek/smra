@@ -4,10 +4,15 @@
         include("conn/conn.php");
         include("libs/function.php");
         include("main.php");
-        $_SESSION['err'] = $_GET['err'];
-        $vn4digit = $_SESSION['vn4digit'];
-        //echo $_SESSION['err'] ;
+        if(empty($_GET['vn'])){
 
+            $vn4digit = $_SESSION['vn4digit'];
+        
+        }else{
+
+            $vn4digit = $_GET['vn'];
+
+         }
 ?>
 
 
@@ -18,25 +23,20 @@
                     <div class="col-lg-12">
                        <ol class="breadcrumb">
                              <!--<li class="active"><a href="index.php">หน้าแรก</a></li>-->
-                            <li class="active"><a href="community-service_index.php?vn=<?=$vn4digit;?>">แสดงข้อมูล COMMUNITY-SERVICE   <?php echo get_month_show($vn4digit); ?></a></li>
-                            <li class="active">แสดงรายชื่อที่ Error -::- <?=$_SESSION['err'];?>  -::- <?=get_Error_Detail_Name($_SESSION['err']);?></li>
-                            
+                            <li class="active">แสดงข้อมูล PRENATAL <?php echo get_month_show($vn4digit); ?></li>
                         </ol> 
-
                     </div>
 
                 </div>
 
                 <div class="row">
                             <div class="panel panel-primary">
-                                <div class="panel-heading">Error CODE -::- <?=$_SESSION['err'];?> -::- <?=get_Error_Detail_Name($_SESSION['err']);?>
-                                        <a href="export_xls.php?err=<?=$_SESSION['err'];?>&vn=<?=$vn4digit;?>" class="btn btn-success btn-sm active" role="button"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Excel </a>
-                                </div>
+                                <div class="panel-heading">PRENATAL</div>
                                     <div class="panel-body">
-                                        <div class="col-md-12"> 
+                                        <div class="col-md-8"> 
                                             <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >
                                                  <div class="list-group">
-                                                    <?=get_rows_Community_Service_Error_detail_list($_SESSION['err'],$vn4digit,"No");?>
+                                                    <?=get_rows_Prenatal_Error_detail($vn4digit);?>
                                                 </div>
                                             </div> 
                                         </div>

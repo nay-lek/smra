@@ -6,7 +6,7 @@
         include("main.php");
         $_SESSION['err'] = $_GET['err'];
         $vn4digit = $_SESSION['vn4digit'];
-        //echo $_SESSION['err'] ;
+       // echo $_SESSION['err'] ;
 
 ?>
 
@@ -18,7 +18,7 @@
                     <div class="col-lg-12">
                        <ol class="breadcrumb">
                              <!--<li class="active"><a href="index.php">หน้าแรก</a></li>-->
-                            <li class="active"><a href="community-service_index.php?vn=<?=$vn4digit;?>">แสดงข้อมูล COMMUNITY-SERVICE   <?php echo get_month_show($vn4digit); ?></a></li>
+                            <li class="active"><a href="prenatal_index.php?vn=<?=$vn4digit;?>">แสดงข้อมูล PRENATAL <?php echo get_month_show($vn4digit); ?></a></li>
                             <li class="active">แสดงรายชื่อที่ Error -::- <?=$_SESSION['err'];?>  -::- <?=get_Error_Detail_Name($_SESSION['err']);?></li>
                             
                         </ol> 
@@ -36,7 +36,7 @@
                                         <div class="col-md-12"> 
                                             <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >
                                                  <div class="list-group">
-                                                    <?=get_rows_Community_Service_Error_detail_list($_SESSION['err'],$vn4digit,"No");?>
+                                                    <?=get_rows_Prenatal_Error_detail_list($_SESSION['err'],$_SESSION['vn4digit'],"No");?>
                                                 </div>
                                             </div> 
                                         </div>

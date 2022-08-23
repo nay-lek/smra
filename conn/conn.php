@@ -1,9 +1,9 @@
 <?php
 
-	
-	define("HOSTNAME", "localhost");
-	define("USDBNAME", "root");
-	define("PSDBNAME", "4444");
+	// config for his  
+	define("HOSTNAME", "localhost"); 
+	define("USDBNAME", "sa"); 
+	define("PSDBNAME", "sa");
 	define("_db_", "hos");
 
 	$Conn = mysql_connect(HOSTNAME,USDBNAME,PSDBNAME) or die(mysql_error());

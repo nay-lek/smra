@@ -33,7 +33,7 @@
                                         <a href="export_xls.php?err=<?=$_SESSION['err'];?>&vn=<?=$vn4digit;?>" class="btn btn-success btn-sm active" role="button"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Excel </a>
                                 </div>
                                     <div class="panel-body">
-                                        <div class="col-md-8"> 
+                                        <div class="col-lg-12"> 
                                             <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >
                                                  <div class="list-group">
                                                     <?=get_rows_Home_Error_detail_list($_SESSION['err'],$vn4digit,"No");?>
