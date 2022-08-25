@@ -1,0 +1,1541 @@
+[1mdiff --git a/community-service_detail.php b/community-service_detail.php[m
+[1mindex 85feacf..2b3c699 100644[m
+[1m--- a/community-service_detail.php[m
+[1m+++ b/community-service_detail.php[m
+[36m@@ -33,7 +33,7 @@[m
+                                         <a href="export_xls.php?err=<?=$_SESSION['err'];?>&vn=<?=$vn4digit;?>" class="btn btn-success btn-sm active" role="button"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Excel </a>[m
+                                 </div>[m
+                                     <div class="panel-body">[m
+[31m-                                        <div class="col-md-12"> [m
+[32m+[m[32m                                        <div class="col-md-8">[m[41m [m
+                                             <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >[m
+                                                  <div class="list-group">[m
+                                                     <?=get_rows_Community_Service_Error_detail_list($_SESSION['err'],$vn4digit,"No");?>[m
+[1mdiff --git a/conn/conn.php b/conn/conn.php[m
+[1mindex 98f69fc..5a47021 100644[m
+[1m--- a/conn/conn.php[m
+[1m+++ b/conn/conn.php[m
+[36m@@ -1,9 +1,9 @@[m
+ <?php[m
+ [m
+[31m-	// config for his  [m
+[31m-	define("HOSTNAME", "localhost"); [m
+[31m-	define("USDBNAME", "sa"); [m
+[31m-	define("PSDBNAME", "sa");[m
+[32m+[m[41m	[m
+[32m+[m	[32mdefine("HOSTNAME", "localhost");[m
+[32m+[m	[32mdefine("USDBNAME", "root");[m
+[32m+[m	[32mdefine("PSDBNAME", "4444");[m
+ 	define("_db_", "hos");[m
+ [m
+ 	$Conn = mysql_connect(HOSTNAME,USDBNAME,PSDBNAME) or die(mysql_error());[m
+[1mdiff --git a/export_xls.php b/export_xls.php[m
+[1mindex caf5e24..bbeaae9 100644[m
+[1m--- a/export_xls.php[m
+[1m+++ b/export_xls.php[m
+[36m@@ -54,7 +54,7 @@[m [m$error_code = $_GET['err'];[m
+           $query1 =  mysql_query($sql);      [m
+           while ($result=mysql_fetch_array($query1)) {[m
+ [m
+[31m-             if($error_code=='DX9903' ||$error_code=='DX9910' || $error_code=='DX9911' ){[m
+[32m+[m[32m             if($error_code=='DX9903'){[m
+                 $sql1 = $result['sql_script']."  like'$vn4digit%' group by vn ";[m
+              }else{[m
+                 $sql1 = $result['sql_script']."  like'$vn4digit%' ";[m
+[36m@@ -322,23 +322,6 @@[m [m$error_code = $_GET['err'];[m
+                   $det242 =  date_format($det242, 'Y-m-d');  [m
+                   //-------- END 42 Month[m
+ [m
+[31m-                  //-------start 60 month  --------------[m
+[31m-                  $dst60 = date_create($first_day);[m
+[31m-                  date_add($dst60, date_interval_create_from_date_string('-60 month'));[m
+[31m-                  $dst60 =  date_format($dst60, 'Y-m-d');[m
+[31m-[m
+[31m-                  $det60 = date_create($dst60);[m
+[31m-                  date_add($det60, date_interval_create_from_date_string('-29 days'));[m
+[31m-                  $det60 =  date_format($det60, 'Y-m-d');  [m
+[31m-[m
+[31m-                  $dst260 = date_create($last_day);[m
+[31m-                  date_add($dst260, date_interval_create_from_date_string('-60 month'));[m
+[31m-                  $dst260 =  date_format($dst260, 'Y-m-d'); [m
+[31m-[m
+[31m-                  $det260 = date_create($dst260);[m
+[31m-                  date_add($det260, date_interval_create_from_date_string('-29 days'));[m
+[31m-                  $det260 =  date_format($det260, 'Y-m-d');  [m
+[31m-                  //-------- END 60 Month[m
+ [m
+ [m
+            $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";[m
+[36m@@ -361,10 +344,6 @@[m [m$error_code = $_GET['err'];[m
+                      $sql1 =  $result['sql_script']." and  birthdate between '$dst42' and '$dst242' GROUP BY person.person_id ";[m
+                   break; [m
+ [m
+[31m-                   case 'NU9906':[m
+[31m-                     $sql1 =  $result['sql_script']." and  birthdate between '$dst60' and '$dst260' GROUP BY person.person_id ";[m
+[31m-                  break;                  [m
+[31m-[m
+                   case 'NU9299':[m
+                        $sql1 = $sql1 ;[m
+                       break;[m
+[36m@@ -582,16 +561,6 @@[m [m$error_code = $_GET['err'];[m
+ [m
+ [m
+ [m
+[31m-          case 'PR':[m
+[31m-          $vn4digit = $_GET['vn'];[m
+[31m-           $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";[m
+[31m-          $query1 =  mysql_query($sql);      [m
+[31m-          while ($result=mysql_fetch_array($query1)) {[m
+[31m-             $sql1 = $result['sql_script'] . " between ".get_month_stagement($vn4digit);[m
+[31m-          }[m
+[31m-          break;[m
+[31m-[m
+[31m-[m
+         default:[m
+               $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";[m
+               $query1 =  mysql_query($sql);      [m
+[36m@@ -753,11 +722,6 @@[m [mxmlns="http://www.w3.org/TR/REC-html40">[m
+                                     break;[m
+ [m
+ [m
+[31m-                                  case 'PR':[m
+[31m-                                      echo get_rows_Prenatal_Error_detail_list($error_code,$vn4digit,"export");[m
+[31m-                                    break;[m
+[31m-[m
+[31m-[m
+                                     default: ?>                                      [m
+ [m
+                                        <tr>[m
+[1mdiff --git a/home_detail.php b/home_detail.php[m
+[1mindex a64e396..c16a919 100644[m
+[1m--- a/home_detail.php[m
+[1m+++ b/home_detail.php[m
+[36m@@ -33,7 +33,7 @@[m
+                                         <a href="export_xls.php?err=<?=$_SESSION['err'];?>&vn=<?=$vn4digit;?>" class="btn btn-success btn-sm active" role="button"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Excel </a>[m
+                                 </div>[m
+                                     <div class="panel-body">[m
+[31m-                                        <div class="col-lg-12"> [m
+[32m+[m[32m                                        <div class="col-md-8">[m[41m [m
+                                             <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >[m
+                                                  <div class="list-group">[m
+                                                     <?=get_rows_Home_Error_detail_list($_SESSION['err'],$vn4digit,"No");?>[m
+[1mdiff --git a/index.php b/index.php[m
+[1mindex 34e5ead..e161137 100644[m
+[1m--- a/index.php[m
+[1m+++ b/index.php[m
+[36m@@ -389,17 +389,6 @@[m
+                                   </div>  [m
+ [m
+ [m
+[31m-                                  <div class="col-md-3"> [m
+[31m-                                          <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #333;" >[m
+[31m-                                                  <a href="prenatal_index.php?vn=<?=get_vn_4digit($selyear,$selmonth);?>" target="_blank"[m
+[31m-                                                   <?php if(get_rows_Prenatal_Error_all(get_vn_4digit($selyear,$selmonth))==0){;?>  class="btn btn-success btn-md "<?php }else{ ?> class="btn btn-warning btn-md " <?php } ?>   role="button">[m
+[31m-                                                   [m
+[31m-                                                              PRENATAL   : [m
+[31m-                                                          <span class="badge" > <?=get_rows_Prenatal_Error_all(get_vn_4digit($selyear,$selmonth));?> </span>[m
+[31m-                                                  </a>[m
+[31m-                                           </div> [m
+[31m-                                  </div>  [m
+[31m-[m
+ [m
+                                   <div class="col-md-3"> [m
+                                           <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #333;" >[m
+[1mdiff --git a/libs/function.php b/libs/function.php[m
+[1mindex c54a07a..c4a1f77 100644[m
+[1m--- a/libs/function.php[m
+[1m+++ b/libs/function.php[m
+[36m@@ -919,7 +919,6 @@[m [mfunction get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {[m
+                                       <th> ชื่อ - สกุล </th>[m
+                                       <th> CID</th>[m
+                                       <th> DATEServ</th>[m
+[31m-                                      <th> TimeServ</th>[m
+                                  </tr>[m
+ [m
+                                       ";[m
+[36m@@ -933,7 +932,6 @@[m [mfunction get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {[m
+         $DATEServ = get_date_show($result['vstdate']);[m
+         $person_id = $result['hn'];[m
+         $cid = $result['cid'];[m
+[31m-        $vsttime = $result['vsttime'];[m
+         $i = $i + 1;[m
+         //$data   = $data. $i  . " | " . $person_id ." | ".$ptname." | ". $cid  . " | ".get_date_show($DATEServ).'<br>';[m
+         $tb = $tb . "           <tr>[m
+[36m@@ -942,7 +940,6 @@[m [mfunction get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {[m
+                                       <td>$ptname </td>[m
+                                       <td>$cid</td>[m
+                                       <td>$DATEServ</td>[m
+[31m-                                      <td>$vsttime</td>[m
+                                   </tr> [m
+ [m
+                                   ";[m
+[36m@@ -1018,37 +1015,6 @@[m [mfunction get_row_Diag_opd_Error_all($vn4digit) {[m
+                 where (ASCII(ovstdiag.icd10) between 65 and  90)[m
+                         and ovstdiag.icd10 <>'R5100' and  icd10_nhso.code is null and ovstdiag.vn  like'$vn4digit%' [m
+ [m
+[31m-                 [m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                 UNION[m
+[31m-[m
+[31m-[m
+[31m-                    select 'DX9910' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9910'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+[31m-                    from ovstdiag [m
+[31m-                     LEFT JOIN patient ON ovstdiag.hn = patient.hn[m
+[31m-                     LEFT JOIN ovst on ovstdiag.vn = ovst.vn[m
+[31m-                     INNER JOIN (SELECT lab_head.vn[m
+[31m-                        from lab_order [m
+[31m-                     left join lab_head on lab_order.lab_order_number = lab_head.lab_order_number [m
+[31m-                     LEFT JOIN ovst ov1 on lab_head.vn  = ov1.vn [m
+[31m-                    where lab_order.lab_items_code = '830' and  if(lab_order.lab_order_result = 'Positive' , [m
+[31m-                              if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('U071','U072','Z290')> 0)  ,'Ok','NG'),[m
+[31m-                              if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('Z115')> 0),'Ok','NG')) = 'NG')  chk on ovstdiag.vn = chk.vn[m
+[31m-[m
+[31m-                    where  ASCII(SUBSTR(icd10,1,1)) BETWEEN 65 and 90 and  ovst.vn like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+[31m-                    UNION[m
+[31m-[m
+[31m-                    select 'DX9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+[31m-                    from ovstdiag [m
+[31m-                     LEFT JOIN patient ON ovstdiag.hn = patient.hn[m
+[31m-                     LEFT JOIN ovst on ovstdiag.vn = ovst.vn[m
+[31m-                    where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+ 				";[m
+     //echo $sql;	[m
+     $CC = 0;[m
+[36m@@ -1131,33 +1097,7 @@[m [mfunction get_rows_Diag_opd_Error_detail($vn4digit) {[m
+                         left join  icd10_nhso on ovstdiag.icd10 = icd10_nhso.code[m
+                         where (ASCII(ovstdiag.icd10) between 65 and  90)[m
+                         and ovstdiag.icd10 <>'R5100' and  icd10_nhso.code is null and ovstdiag.vn  like'$vn4digit%'               [m
+[31m-                [m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'DX9910' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9910'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+[31m-                from ovstdiag [m
+[31m-                 LEFT JOIN patient ON ovstdiag.hn = patient.hn[m
+[31m-                 LEFT JOIN ovst on ovstdiag.vn = ovst.vn[m
+[31m-                 INNER JOIN (SELECT lab_head.vn[m
+[31m-                    from lab_order [m
+[31m-                 left join lab_head on lab_order.lab_order_number = lab_head.lab_order_number [m
+[31m-                 LEFT JOIN ovst ov1 on lab_head.vn  = ov1.vn [m
+[31m-                where lab_order.lab_items_code = '830' and  if(lab_order.lab_order_result = 'Positive' , [m
+[31m-                          if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('U071','U072','Z290')> 0)  ,'Ok','NG'),[m
+[31m-                          if((SELECT count(icd10) from ovstdiag where ovstdiag.vn = ov1.vn and ovstdiag.icd10 in('Z115')> 0),'Ok','NG')) = 'NG')  chk on ovstdiag.vn = chk.vn[m
+[31m-[m
+[31m-                where  ASCII(SUBSTR(icd10,1,1)) BETWEEN 65 and 90 and  ovst.vn like'$vn4digit%' [m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-[m
+[31m-              select 'DX9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+[31m-                        from ovstdiag [m
+[31m-                         LEFT JOIN patient ON ovstdiag.hn = patient.hn[m
+[31m-                         LEFT JOIN ovst on ovstdiag.vn = ovst.vn[m
+[31m-                        where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' [m
+[31m-[m
+[32m+[m[41m                    [m
+ 				order by CC desc , ERROR_CODE ";[m
+     //echo $sql;	[m
+     $CC = 0;[m
+[36m@@ -1209,7 +1149,7 @@[m [mfunction get_rows_Diag_opd_Error_detail_list($error_code, $vn4digit, $xls) {[m
+                                       ";[m
+     $i = 0;[m
+ [m
+[31m-    if($error_code=='DX9903'|| $error_code=='DX9910' ||  $error_code=='DX9911'){[m
+[32m+[m[32m    if($error_code=='DX9903'){[m
+             $query2 = mysql_query($sql1 . "  like'$vn4digit%' group by vn"); [m
+ [m
+     }else{[m
+[36m@@ -1292,25 +1232,6 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                 and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit%'[m
+ [m
+ [m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'AN9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9905'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  [m
+[31m-                from person_anc[m
+[31m-                INNER JOIN (SELECT person_anc.person_anc_id , person_anc.person_id ,person_anc.preg_no  , count(person_anc_service.person_anc_id) as cc[m
+[31m-                , max(person_anc_service.anc_service_date) , max(person_anc_service.vn),oapp.nextdate,ROUND((DATEDIFF(CURDATE(),oapp.nextdate)/7),0) as 'Week_(Nextdate-Curdate)',[m
+[31m-                 person_anc_other_precare.precare_date , if(((DATEDIFF(CURDATE(),oapp.nextdate)/7) > 0 and person_anc_other_precare.precare_date is null and person_anc.labor_date is  null),'X','O') as chk [m
+[31m-                from person_anc[m
+[31m-                LEFT JOIN person_anc_service on  person_anc.person_anc_id = person_anc_service.person_anc_id [m
+[31m-                LEFT JOIN oapp on (SELECT vn from person_anc_service where person_anc_id = person_anc.person_anc_id ORDER BY person_anc_service.vn desc limit 1) = oapp.vn and oapp.clinic = '007'[m
+[31m-                LEFT JOIN person_anc_other_precare on person_anc.person_anc_id = person_anc_other_precare.person_anc_id and person_anc_other_precare.precare_date > oapp.nextdate[m
+[31m-                left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                where person_anc_service.anc_service_type_id = 1 and person_anc.discharge <> 'Y' and person_anc.out_region = 'N'[m
+[31m-                and oapp.nextdate < CURDATE()[m
+[31m-                GROUP BY person_anc.person_anc_id , person_anc.person_id, person_anc.preg_no [m
+[31m-                HAVING chk = 'X'[m
+[31m-                ORDER BY person_anc.person_id ,person_anc.preg_no ) person_anc_chk on person_anc.person_anc_id = person_anc_chk.person_anc_id[m
+[31m-[m
+[31m-[m
+                     UNION[m
+ [m
+                select 'AN9990' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9990'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person_anc.person_anc_id)),0) as CC  [m
+[36m@@ -1359,7 +1280,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                     and (TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) > (SELECT week_max from person_anc_preg_week where person_anc_preg_week_id = 1))[m
+                     HAVING week_anc = 'NO' or person_anc.pre_labor_service1_date is null[m
+                     ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+[31m-                     where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'[m
+[32m+[m[32m                     where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'[m
+ [m
+ [m
+                     UNION[m
+[36m@@ -1391,7 +1312,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                     HAVING week_anc = 'NO' or person_anc.pre_labor_service2_date is null[m
+                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[32m+[m[32m                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+ [m
+                     UNION[m
+[36m@@ -1425,7 +1346,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service3_date is null[m
+                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'[m
+[32m+[m[32m                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1457,7 +1378,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service4_date is null[m
+                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[32m+[m[32m                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+ [m
+ [m
+[36m@@ -1490,7 +1411,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service5_date is null[m
+                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[32m+[m[32m                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1503,7 +1424,7 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                                             left JOIN person on ovst.hn = person.patient_hn) person_dental on person_anc.person_id= person_dental.person_id[m
+                                             WHERE person_dental.person_id is null and person_anc.discharge <>'Y') anc_dental on person_anc.person_id = anc_dental.person_id[m
+                         where out_region = 'N'  [m
+[31m-                        and person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'[m
+[32m+[m[32m                        and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1525,6 +1446,8 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+                         where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'  [m
+ [m
+ [m
+[32m+[m
+[32m+[m
+ 				   "[m
+ [m
+     ;[m
+[36m@@ -1541,42 +1464,42 @@[m [mfunction get_row_Anc_Error_all($vn4digit) {[m
+ function get_rows_Anc_Error_detail($vn4digit) {[m
+ [m
+     $sql = "select 'AN1141' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN1141'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  [m
+[31m-                from person_anc_service ps_service[m
+[31m-                where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week is null or ps_service.pa_week ='')[m
+[31m-                and ps_service.vn like'$vn4digit%'[m
+[31m-                UNION[m
+[32m+[m				[32mfrom person_anc_service ps_service[m
+[32m+[m				[32mwhere   ps_service.anc_service_type_id = 1 and (ps_service.pa_week is null or ps_service.pa_week ='')[m
+[32m+[m				[32mand ps_service.vn like'$vn4digit%'[m
+[32m+[m				[32mUNION[m
+ [m
+[31m-                select 'AN9241' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9241'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  [m
+[31m-                from person_anc_service ps_service[m
+[31m-                where   ps_service.anc_service_type_id = 1 and (ps_service.pa_week < 4 or ps_service.pa_week > 45)[m
+[31m-                and ps_service.vn like'$vn4digit%'[m
+[32m+[m				[32mselect 'AN9241' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9241'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC[m[41m  [m
+[32m+[m				[32mfrom person_anc_service ps_service[m
+[32m+[m				[32mwhere   ps_service.anc_service_type_id = 1 and (ps_service.pa_week < 4 or ps_service.pa_week > 45)[m
+[32m+[m				[32mand ps_service.vn like'$vn4digit%'[m
+ [m
+[31m-                UNION[m
+[31m-                select 'AN9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9901'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  [m
+[31m-                from person_anc_service ps_service[m
+[31m-                left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id[m
+[31m-                where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no > 20[m
+[31m-                 and ps_service.vn like'$vn4digit%'[m
+[32m+[m				[32mUNION[m
+[32m+[m				[32mselect 'AN9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9901'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC[m[41m  [m
+[32m+[m				[32mfrom person_anc_service ps_service[m
+[32m+[m				[32mleft JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id[m
+[32m+[m				[32mwhere   ps_service.anc_service_type_id = 1 and ps_anc.preg_no > 20[m
+[32m+[m				[32m and ps_service.vn like'$vn4digit%'[m
+ [m
+[31m-                UNION[m
+[31m-                  select 'AN9299' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9299'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC   [m
+[31m-                  from ovst [m
+[31m-                   INNER JOIN ( SELECT person_anc_id,anc_service_date , vn   [m
+[31m-                    from person_anc_service[m
+[31m-                  GROUP BY concat(person_anc_id,anc_service_date) [m
+[31m-                  HAVING count(concat(person_anc_id,anc_service_date)) >1 ) ps_anc on ovst.vn = ps_anc.vn [m
+[31m-                  where ovst.vn like'$vn4digit%' [m
+[32m+[m				[32mUNION[m
+[32m+[m				[32m  select 'AN9299' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9299'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m[41m   [m
+[32m+[m				[32m  from ovst[m[41m [m
+[32m+[m				[32m   INNER JOIN (	SELECT person_anc_id,anc_service_date , vn[m[41m   [m
+[32m+[m					[32mfrom person_anc_service[m
+[32m+[m				[32m  GROUP BY concat(person_anc_id,anc_service_date)[m[41m [m
+[32m+[m				[32m  HAVING count(concat(person_anc_id,anc_service_date)) >1 ) ps_anc on ovst.vn = ps_anc.vn[m[41m [m
+[32m+[m				[32m  where ovst.vn like'$vn4digit%'[m[41m [m
+ [m
+[31m-                  UNION[m
+[32m+[m				[32m  UNION[m
+ [m
+[31m-                select 'AN9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9902'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC  [m
+[31m-                from person_anc_service ps_service[m
+[31m-                left JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id[m
+[31m-                where   ps_service.anc_service_type_id = 1 and ps_anc.preg_no is null[m
+[31m-                 and ps_service.vn like'$vn4digit%'[m
+[32m+[m				[32mselect 'AN9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9902'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC[m[41m  [m
+[32m+[m				[32mfrom person_anc_service ps_service[m
+[32m+[m				[32mleft JOIN person_anc ps_anc on ps_service.person_anc_id = ps_anc.person_anc_id[m
+[32m+[m				[32mwhere   ps_service.anc_service_type_id = 1 and ps_anc.preg_no is null[m
+[32m+[m				[32m and ps_service.vn like'$vn4digit%'[m
+ [m
+[31m-                  [m
+[31m-                  UNION[m
+[32m+[m
+[32m+[m[32m                UNION[m
+                 select 'AN9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9903'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  [m
+                 from person_anc[m
+                 INNER JOIN (SELECT person_id,preg_no[m
+[36m@@ -1587,28 +1510,8 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                 and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit%'[m
+ [m
+ [m
+[31m-[m
+                 UNION[m
+ [m
+[31m-                select 'AN9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9905'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  [m
+[31m-                from person_anc[m
+[31m-                INNER JOIN (SELECT person_anc.person_anc_id , person_anc.person_id ,person_anc.preg_no  , count(person_anc_service.person_anc_id) as cc[m
+[31m-                , max(person_anc_service.anc_service_date) , max(person_anc_service.vn),oapp.nextdate,ROUND((DATEDIFF(CURDATE(),oapp.nextdate)/7),0) as 'Week_(Nextdate-Curdate)',[m
+[31m-                 person_anc_other_precare.precare_date , if(((DATEDIFF(CURDATE(),oapp.nextdate)/7) > 0 and person_anc_other_precare.precare_date is null and person_anc.labor_date is  null),'X','O') as chk [m
+[31m-                from person_anc[m
+[31m-                LEFT JOIN person_anc_service on  person_anc.person_anc_id = person_anc_service.person_anc_id [m
+[31m-                LEFT JOIN oapp on (SELECT vn from person_anc_service where person_anc_id = person_anc.person_anc_id ORDER BY person_anc_service.vn desc limit 1) = oapp.vn and oapp.clinic = '007'[m
+[31m-                LEFT JOIN person_anc_other_precare on person_anc.person_anc_id = person_anc_other_precare.person_anc_id and person_anc_other_precare.precare_date > oapp.nextdate[m
+[31m-                left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                where person_anc_service.anc_service_type_id = 1 and person_anc.discharge <> 'Y' and person_anc.out_region = 'N'[m
+[31m-                and oapp.nextdate < CURDATE()[m
+[31m-                GROUP BY person_anc.person_anc_id , person_anc.person_id, person_anc.preg_no [m
+[31m-                HAVING chk = 'X'[m
+[31m-                ORDER BY person_anc.person_id ,person_anc.preg_no ) person_anc_chk on person_anc.person_anc_id = person_anc_chk.person_anc_id[m
+[31m-[m
+[31m-[m
+[31m-                    UNION[m
+[31m-[m
+                select 'AN9990' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9990'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person_anc.person_anc_id)),0) as CC  [m
+                 from person_anc_service ps_service[m
+                 left join person_anc on ps_service.person_anc_id = person_anc.person_anc_id[m
+[36m@@ -1622,8 +1525,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                                                  (concat(year(ps_service.anc_service_date),'-09-30' ))[m
+                                                         else (concat((year(ps_service.anc_service_date)+1) ,'-09-30' )) end )  [m
+                     )  [m
+[31m-                            and ps_service.vn like'$vn4digit%'[m
+[31m-[m
+[32m+[m[32m                    and ps_service.vn like'$vn4digit%'[m
+ [m
+ [m
+                     UNION[m
+[36m@@ -1655,7 +1557,8 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                     and (TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) > (SELECT week_max from person_anc_preg_week where person_anc_preg_week_id = 1))[m
+                     HAVING week_anc = 'NO' or person_anc.pre_labor_service1_date is null[m
+                     ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+[31m-                     where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'[m
+[32m+[m[32m                    where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like'$vn4digit'[m
+[32m+[m
+ [m
+ [m
+                     UNION[m
+[36m@@ -1675,7 +1578,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                                         )[m
+                             )[m
+                                 FROM person_anc_service [m
+[31m-                                where anc_service_number = 2 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 2 )  , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id[m
+[32m+[m[32m                                where anc_service_number = 2 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 2 ) , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id[m
+                                 )[m
+                       ELSE[m
+                                 if(person_anc.pre_labor_service2_date is null,'NULL','Yes')[m
+[36m@@ -1687,7 +1590,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                     HAVING week_anc = 'NO' or person_anc.pre_labor_service2_date is null[m
+                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[32m+[m[32m                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+ [m
+                     UNION[m
+[36m@@ -1709,7 +1612,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+ [m
+                             )[m
+                                 FROM person_anc_service [m
+[31m-                                where anc_service_number = 3 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id[m
+[32m+[m[32m                                where anc_service_number = 3 and if(TIMESTAMPDIFF(week,person_anc.lmp,person_anc_service.anc_service_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 3 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 3 )  , 'Y','N') = 'Y' and person_anc_id = person_anc.person_anc_id[m
+                                 )[m
+                             ELSE[m
+                                 if(person_anc.pre_labor_service3_date is null,'NULL','Yes')[m
+[36m@@ -1721,7 +1624,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service3_date is null[m
+                         ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                         left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                      where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'[m
+[32m+[m[32m                      where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m')) like '$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1736,7 +1639,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                                                 SELECT if(count(person_anc1.person_anc_id)>0,'Yes','NO')[m
+                                                 from person_anc_other_precare[m
+                                                 inner JOIN person_anc person_anc1 on person_anc_other_precare.person_anc_id = person_anc1.person_anc_id[m
+[31m-                                                where precare_no = 4 and if(TIMESTAMPDIFF(week,person_anc1.lmp,person_anc_other_precare.precare_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) , 'Y','N') = 'Y'[m
+[32m+[m[32m                                                where precare_no = 4 and if(TIMESTAMPDIFF(week,person_anc1.lmp,person_anc_other_precare.precare_date)  BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 4 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 4 )  , 'Y','N') = 'Y'[m
+                                                  and person_anc1.person_anc_id = person_anc.person_anc_id[m
+                                             )[m
+                                 )[m
+[36m@@ -1753,8 +1656,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service4_date is null[m
+                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[31m-[m
+[32m+[m[32m                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1762,7 +1664,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                         SELECT  'AN9975' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9975'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC    [m
+                         from person_anc[m
+                             INNER JOIN (SELECT * ,TIMESTAMPDIFF(week,person_anc.lmp,CURDATE()) as wpa_now,[m
+[31m-                        (case when TIMESTAMPDIFF(week,person_anc.lmp,person_anc.pre_labor_service5_date) not BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 5 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 5 )  [m
+[32m+[m[32m                        (case when TIMESTAMPDIFF(week,person_anc.lmp,person_anc.pre_labor_service5_date) not BETWEEN (SELECT week_min_quality from person_anc_preg_week where person_anc_preg_week_id = 5 ) and (SELECT week_max_quality from person_anc_preg_week where person_anc_preg_week_id = 5 )[m[41m [m
+                             THEN [m
+                                     (SELECT if(count(person_anc_id)>0,'Yes',                [m
+                                             ([m
+[36m@@ -1786,8 +1688,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                         HAVING week_anc = 'NO' or person_anc.pre_labor_service5_date is null[m
+                             ) anc_chk on person_anc.person_anc_id = anc_chk.person_anc_id[m
+                             left join patient on (select cid from person where person_id = person_anc.person_id) = patient.cid[m
+[31m-                          where person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+[31m-[m
+[32m+[m[32m                          where concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m'))  like'$vn4digit'[m
+ [m
+                         UNION[m
+ [m
+[36m@@ -1799,7 +1700,7 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                                             left JOIN person on ovst.hn = person.patient_hn) person_dental on person_anc.person_id= person_dental.person_id[m
+                                             WHERE person_dental.person_id is null and person_anc.discharge <>'Y') anc_dental on person_anc.person_id = anc_dental.person_id[m
+                         where out_region = 'N'  [m
+[31m-                        and person_anc.labour_hospcode = (SELECT hospitalcode from opdconfig) and  concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'[m
+[32m+[m[32m                        and concat(RIGHT((DATE_FORMAT(person_anc.anc_register_date ,'%Y') +543),2),DATE_FORMAT(person_anc.anc_register_date ,'%m') ) like'$vn4digit'[m
+ [m
+ [m
+                         UNION[m
+[36m@@ -1813,12 +1714,13 @@[m [mfunction get_rows_Anc_Error_detail($vn4digit) {[m
+                          and concat(RIGHT((DATE_FORMAT(person_anc.labor_date ,'%Y') +543),2),DATE_FORMAT(person_anc.labor_date ,'%m') ) like'$vn4digit'[m
+ [m
+ [m
+[32m+[m
+                          UNION[m
+ [m
+                          select 'AN9982' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'AN9982'  ) as 'ERROR_DETAIL' ,ifnull(count(*),0) as CC  [m
+                         from person_anc ps_anc[m
+                         left join patient on (select cid from person where person_id = ps_anc.person_id) = patient.cid[m
+[31m-                        where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'   [m
+[32m+[m[32m                        where   TIMESTAMPDIFF(week,ps_anc.lmp,CURDATE()) >42 and ps_anc.out_region ='N' and ps_anc.labor_status_id = '1' and ps_anc.discharge <> 'Y'[m[41m  [m
+                          [m
+ [m
+ 				 order by CC desc , ERROR_CODE ,ERROR_CODE";[m
+[36m@@ -2186,7 +2088,7 @@[m [mfunction get_row_Drug_opd_Error_all($vn4digit) {[m
+ 					left join ovst on er_regist_oper.vn = ovst.vn [m
+ 					left join patient on ovst.hn = patient.hn [m
+ 				  left join opdscreen on er_regist_oper.vn = opdscreen.vn [m
+[31m-				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode in( '1900485' , '1480175')  [m
+[32m+[m				[32m  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode = '1900485'[m[41m [m
+ 				  left join drugitems on opitemrece.icode = drugitems.icode [m
+ 				   where er_oper_code ='176' and opitemrece.vn is null and er_regist_oper.vn like'$vn4digit%' [m
+ [m
+[36m@@ -2250,7 +2152,7 @@[m [mfunction get_rows_Drug_opd_Error_detail($vn4digit) {[m
+ 					left join ovst on er_regist_oper.vn = ovst.vn [m
+ 					left join patient on ovst.hn = patient.hn [m
+ 				  left join opdscreen on er_regist_oper.vn = opdscreen.vn [m
+[31m-				  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode in( '1900485' , '1480175')[m
+[32m+[m				[32m  left join opitemrece on er_regist_oper.vn = opitemrece.vn and opitemrece.icode = '1900485'[m[41m [m
+ 				  left join drugitems on opitemrece.icode = drugitems.icode [m
+ 				   where er_oper_code ='176' and opitemrece.vn is null and er_regist_oper.vn like'$vn4digit%' [m
+ 				 [m
+[36m@@ -3899,12 +3801,12 @@[m [mfunction get_rows_Charge_opd_Error_detail_list($error_code, $vn4digit, $xls) {[m
+ [m
+         $query2 = mysql_query($sql1 . " like'$vn4digit%' group by vn") or die(mysql_error());[m
+       }else {[m
+[31m-            if ($error_code == 'CR9901') {[m
+[32m+[m[32m            if ($error_code == 'CR9903') {[m
+ [m
+[31m-                $query2 = mysql_query($sql1 . " and  like'$vn4digit%' ") or die(mysql_error());[m
+[32m+[m[32m                $query2 = mysql_query($sql1 . " like'$vn4digit%' ") or die(mysql_error());[m
+ [m
+             }else{               [m
+[31m-                    $query2 = mysql_query($sql1 . "  like'$vn4digit%'") or die(mysql_error());[m
+[32m+[m[32m                    $query2 = mysql_query($sql1 . " and vn_stat.vn like'$vn4digit%'") or die(mysql_error());[m
+                 }[m
+         }[m
+ [m
+[36m@@ -3947,32 +3849,6 @@[m [mfunction get_row_Procedure_opd_Error_all($vn4digit) {[m
+ 				   and (ovst_vaccine.person_vaccine_id not in('31','32','33','34','35','36','37','38','39','40','50','51','52','53','54') or ovst_vaccine.person_vaccine_id is null)[m
+ 				   and er_regist_oper.vn like'$vn4digit%' [m
+ [m
+[31m-            UNION[m
+[31m-[m
+[31m-            select 'PX9001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9001'  ) as 'ERROR_DETAIL' ,  ifnull(count(vn),0) as CC [m
+[31m-            from health_med_service [m
+[31m-            inner JOIN (SELECT health_med_service_id, count(health_med_operation_item_id) as cc[m
+[31m-            from health_med_service_operation [m
+[31m-            where health_med_service_id in(SELECT  health_med_service_id [m
+[31m-            FROM health_med_service_treatment [m
+[31m-            where  health_med_treatment_subtype_id = 5 )[m
+[31m-            and  health_med_operation_item_id  in(7,8,9,11,16)[m
+[31m-            GROUP BY health_med_service_id [m
+[31m-            HAVING cc < 5 )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id [m
+[31m-            where vn like'$vn4digit%' [m
+[31m-[m
+[31m-            UNION  [m
+[31m-            select 'PX9002' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9002'  ) as 'ERROR_DETAIL' ,  ifnull(count(health_med_service.vn),0) as CC [m
+[31m-            from health_med_service [m
+[31m-            inner JOIN (SELECT DISTINCT(health_med_service_id)[m
+[31m-            from health_med_service_operation [m
+[31m-            where health_med_service_id in(SELECT  DISTINCT(health_med_service_id) [m
+[31m-            FROM health_med_service_treatment [m
+[31m-            where  health_med_treatment_subtype_id = 5 )[m
+[31m-             )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id [m
+[31m-            left join ovst on health_med_service.vn = ovst.vn[m
+[31m-            left join patient on ovst.hn = patient.hn[m
+[31m-            where patient.sex = 1  and health_med_service.vn like '$vn4digit%' [m
+ [m
+ [m
+ 				";[m
+[36m@@ -3998,32 +3874,6 @@[m [mfunction get_rows_Procedure_opd_Error_detail($vn4digit) {[m
+ 			   and er_regist_oper.vn like'$vn4digit%' [m
+ [m
+ [m
+[31m-            UNION[m
+[31m-[m
+[31m-            select 'PX9001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9001'  ) as 'ERROR_DETAIL' ,  ifnull(count(vn),0) as CC [m
+[31m-            from health_med_service [m
+[31m-            inner JOIN (SELECT health_med_service_id, count(health_med_operation_item_id) as cc[m
+[31m-            from health_med_service_operation [m
+[31m-            where health_med_service_id in(SELECT  health_med_service_id [m
+[31m-            FROM health_med_service_treatment [m
+[31m-            where  health_med_treatment_subtype_id = 5 )[m
+[31m-            and  health_med_operation_item_id  in(7,8,9,11,16)[m
+[31m-            GROUP BY health_med_service_id [m
+[31m-            HAVING cc < 5 )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id [m
+[31m-            where vn like'$vn4digit%' [m
+[31m-[m
+[31m-            UNION  [m
+[31m-            select 'PX9002' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PX9002'  ) as 'ERROR_DETAIL' ,  ifnull(count(health_med_service.vn),0) as CC [m
+[31m-            from health_med_service [m
+[31m-            inner JOIN (SELECT DISTINCT(health_med_service_id)[m
+[31m-            from health_med_service_operation [m
+[31m-            where health_med_service_id in(SELECT  DISTINCT(health_med_service_id) [m
+[31m-            FROM health_med_service_treatment [m
+[31m-            where  health_med_treatment_subtype_id = 5 )[m
+[31m-             )  health_chk on health_med_service.health_med_service_id = health_chk.health_med_service_id [m
+[31m-            left join ovst on health_med_service.vn = ovst.vn[m
+[31m-            left join patient on ovst.hn = patient.hn[m
+[31m-            where patient.sex = 1  and health_med_service.vn like '$vn4digit%'[m
+ [m
+ 				 order by CC desc , ERROR_CODE ";[m
+     //echo $sql;	[m
+[36m@@ -4075,15 +3925,8 @@[m [mfunction get_rows_Procedure_opd_Error_detail_list($error_code, $vn4digit, $xls)[m
+ [m
+                                       ";[m
+     $i = 0;[m
+[31m-    //check Error Code for get sql detail[m
+[31m-    if($error_code=='PX9901'){[m
+[31m-          $query2 = mysql_query($sql1 . " and er_regist_oper.vn like'$vn4digit%'");[m
+[31m-    }else{[m
+[31m-         [m
+[31m-          $query2 = mysql_query($sql1 . " like'$vn4digit%'");[m
+[31m-    }[m
+[31m-   [m
+ [m
+[32m+[m[32m    $query2 = mysql_query($sql1 . " and er_regist_oper.vn like'$vn4digit%'");[m
+     $rows = mysql_num_rows($query2);[m
+     while ($result = mysql_fetch_array($query2)) {[m
+         $ptname = $result['ptname'];[m
+[36m@@ -4110,8 +3953,6 @@[m [mfunction get_rows_Procedure_opd_Error_detail_list($error_code, $vn4digit, $xls)[m
+     return $tb . $tb_footer;[m
+ }[m
+ [m
+[31m-[m
+[31m-[m
+ function get_row_Ncd_screen_Error_all($vn4digit) {[m
+ [m
+     $date_stage_ment = get_month_stagement($vn4digit);[m
+[36m@@ -4256,7 +4097,7 @@[m [mfunction get_row_Ncd_screen_Error_all($vn4digit) {[m
+                       left join person_dmht_screen_summary on [m
+                          person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id[m
+                       left join person on person_dmht_screen_summary.person_id= person.person_id[m
+[31m-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight  not BETWEEN '10' and '250'[m
+[32m+[m[32m                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight > 250[m
+                         and person_dmht_risk_screen_head.screen_date between  $date_stage_ment[m
+ [m
+ [m
+[36m@@ -4281,16 +4122,6 @@[m [mfunction get_row_Ncd_screen_Error_all($vn4digit) {[m
+                     where  screen_date between  $date_stage_ment ) person_dnht_chk on person.person_id = person_dnht_chk.person_id[m
+                     and (person.death_date is not null or person.death = 'Y') and person.death_date <= screen_date  [m
+ [m
+[31m-                   UNION[m
+[31m-[m
+[31m-                    select 'NC9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'NC9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(person.person_id),0) as CC [m
+[31m-                      from person_dmht_risk_screen_head[m
+[31m-                      left join person_dmht_screen_summary on [m
+[31m-                         person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id[m
+[31m-                      left join person on person_dmht_screen_summary.person_id= person.person_id[m
+[31m-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_height  not BETWEEN '30' and '250'[m
+[31m-                        and person_dmht_risk_screen_head.screen_date between  $date_stage_ment[m
+[31m-[m
+ 				";[m
+     //echo $sql;	[m
+     $CC = 0;[m
+[36m@@ -4446,7 +4277,7 @@[m [mfunction get_rows_Ncd_screen_Error_detail($vn4digit) {[m
+                       left join person_dmht_screen_summary on [m
+                          person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id[m
+                       left join person on person_dmht_screen_summary.person_id= person.person_id[m
+[31m-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight  not BETWEEN '10' and '250'[m
+[32m+[m[32m                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_weight > 250[m
+                         and person_dmht_risk_screen_head.screen_date between  $date_stage_ment[m
+ [m
+ [m
+[36m@@ -4472,18 +4303,6 @@[m [mfunction get_rows_Ncd_screen_Error_detail($vn4digit) {[m
+                     where  screen_date between  $date_stage_ment ) person_dnht_chk on person.person_id = person_dnht_chk.person_id[m
+                     and (person.death_date is not null or person.death = 'Y') and person.death_date <= screen_date  [m
+ [m
+[31m-                [m
+[31m-                UNION[m
+[31m-[m
+[31m-                    select 'NC9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'NC9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(person.person_id),0) as CC [m
+[31m-                      from person_dmht_risk_screen_head[m
+[31m-                      left join person_dmht_screen_summary on [m
+[31m-                         person_dmht_risk_screen_head.person_dmht_screen_summary_id = person_dmht_screen_summary.person_dmht_screen_summary_id[m
+[31m-                      left join person on person_dmht_screen_summary.person_id= person.person_id[m
+[31m-                      where  person_dmht_screen_summary.status_active = 'Y' and person_dmht_risk_screen_head.body_height  not BETWEEN '30' and '250'[m
+[31m-                        and person_dmht_risk_screen_head.screen_date between  $date_stage_ment[m
+[31m-[m
+[31m-[m
+ 				 order by CC desc , ERROR_CODE ";[m
+     //echo $sql;	[m
+     $CC = 0;[m
+[36m@@ -4603,23 +4422,6 @@[m [mfunction get_row_Home_Error_all($vn4digit) {[m
+ 			      where vms.village_id <> 1                             [m
+ 			      group by vms.house_id                                                       [m
+ 			      having count(vms.village_id) > 1 order by vms.village_id) hous_chk on house.house_id = hous_chk.house_id[m
+[31m-[m
+[31m-[m
+[31m-                  UNION[m
+[31m-[m
+[31m-                 select 'HO9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'HO9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(house.house_id),0) as CC [m
+[31m-                  from house[m
+[31m-                  left join village on (house.village_id) = village.village_id[m
+[31m-                  LEFT JOIN (SELECT  person.house_id,village_moo,GROUP_CONCAT(DISTINCT(house.address)) as address, count(person.person_id) as cc , sum(if(death='Y',1,0)) as c_death  , [m
+[31m-                 (count(person_id) - sum(if(death='Y',1,0))) as chk , GROUP_CONCAT(DISTINCT(person.person_id)) as person_id[m
+[31m-                from person [m
+[31m-                LEFT JOIN house on person.house_id = house.house_id[m
+[31m-                LEFT JOIN village on house.village_id = village.village_id[m
+[31m-                GROUP BY person.house_id[m
+[31m-                HAVING chk = 0 ) vms on house.house_id = vms.house_id[m
+[31m-                 where house.village_id <> 1 and  vms.house_id is not null [m
+[31m-               [m
+[31m-[m
+ 					 [m
+ 				  ";[m
+ [m
+[36m@@ -4666,20 +4468,7 @@[m [mfunction get_rows_Home_Error_detail($vn4digit) {[m
+                                                 where vms.village_id <> 1                             [m
+                                                 group by vms.house_id                                                       [m
+                                                 having count(*) > 1 order by vms.village_id) hous_chk on house.house_id = hous_chk.house_id[m
+[31m-                  UNION[m
+ [m
+[31m-                 select 'HO9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'HO9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(house.house_id),0) as CC [m
+[31m-                  from house[m
+[31m-                  left join village on (house.village_id) = village.village_id[m
+[31m-                  LEFT JOIN (SELECT  person.house_id,village_moo,GROUP_CONCAT(DISTINCT(house.address)) as address, count(person.person_id) as cc , sum(if(death='Y',1,0)) as c_death  , [m
+[31m-                 (count(person_id) - sum(if(death='Y',1,0))) as chk , GROUP_CONCAT(DISTINCT(person.person_id)) as person_id[m
+[31m-                from person [m
+[31m-                LEFT JOIN house on person.house_id = house.house_id[m
+[31m-                LEFT JOIN village on house.village_id = village.village_id[m
+[31m-                GROUP BY person.house_id[m
+[31m-                HAVING chk = 0 ) vms on house.house_id = vms.house_id[m
+[31m-                 where house.village_id <> 1 and  vms.house_id is not null [m
+[31m-                   [m
+ [m
+ 					UNION[m
+ [m
+[36m@@ -4688,15 +4477,10 @@[m [mfunction get_rows_Home_Error_detail($vn4digit) {[m
+   					LEFT JOIN (SELECT house_id from village_organization_member_service group by house_id) vms on house.house_id = vms.house_id[m
+   					where vms.house_id is null and house.village_id <> 1[m
+ [m
+[31m-				  order by CC desc , ERROR_CODE [m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                  ";[m
+[32m+[m				[32m  order by CC desc , ERROR_CODE ";[m
+ [m
+ [m
+[31m-   // echo $sql;	[m
+[32m+[m[32m    //echo $sql;[m[41m	[m
+     $CC = 0;[m
+     $query = mysql_query($sql);[m
+     $aherf = "";[m
+[36m@@ -4746,19 +4530,6 @@[m [mfunction get_rows_Home_Error_detail_list($error_code, $vn4digit, $xls) {[m
+                                           <th>ชื่อ อสม.</th>[m
+                                           <th>รหัสบ้าน</th>[m
+                                     </tr> ";[m
+[31m-        }elseif($error_code=="HO9904"){[m
+[31m-           $tb = $tb_title . "     <tr>[m
+[31m-                                          <th>#</th>[m
+[31m-                                          <th>บ้านเลขที่ </th>[m
+[31m-                                          <th>หมู่</th>[m
+[31m-                                          <th>บ้าน</th>[m
+[31m-                                          <th>เลขทะเบียนบ้าน</th>[m
+[31m-                                          <th>PID</th>[m
+[31m-                                          <th>ชื่อ-สกุล</th>[m
+[31m-                                          <th>รหัสบ้าน</th>[m
+[31m-                                    </tr> ";[m
+[31m-[m
+[31m-[m
+         }else{[m
+         $tb = $tb_title . " 	<tr>[m
+                                           <th>#</th>[m
+[36m@@ -4801,20 +4572,6 @@[m [mfunction get_rows_Home_Error_detail_list($error_code, $vn4digit, $xls) {[m
+                                       <td>$ps_name </td>[m
+                                       <td>$house_id</td>[m
+                                   </tr> "; [m
+[31m-        }elseif($error_code=="HO9904"){[m
+[31m-                    $person_id = $result['person_id'];[m
+[31m-                    $person_name = $result['pt_name'];[m
+[31m-                        $tb = $tb . "<tr>[m
+[31m-                                      <td >$i</td>                                     [m
+[31m-                                      <td>$address </td>[m
+[31m-                                      <td>$village_moo</td>[m
+[31m-                                      <td>$village_name</td>[m
+[31m-                                      <td>$census_id</td>[m
+[31m-                                      <td>$person_id </td>[m
+[31m-                                      <td>$person_name </td>[m
+[31m-                                      <td>$house_id</td>[m
+[31m-                                  </tr> "; [m
+[31m-[m
+         }else{[m
+         $tb = $tb . "           <tr>[m
+                                       <td >$i</td>                                     [m
+[36m@@ -4861,19 +4618,7 @@[m [mfunction get_row_Community_service_Error_all($vn4digit) {[m
+ 				GROUP BY concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)[m
+ 				HAVING count(concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)) >1 )  community[m
+ 				on ovst.vn = community.vn[m
+[31m-				where ovst.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-            UNION [m
+[31m-[m
+[31m-[m
+[31m-                select 'CS9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'CS9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(ovst.vn),0) as CC [m
+[31m-                FROM ovst[m
+[31m-                        inner join  opdscreen  on ovst.vn = opdscreen.vn[m
+[31m-                        LEFT JOIN ovst_community_service on opdscreen.vn = ovst_community_service.vn                                        [m
+[31m-                        where (cc LIKE '%เยี่ยมบ้าน%'   or cc LIKE 'เยี่ยมบ้าน%' or cc LIKE '%เยี่ยม%'   )  and ovst_community_service.vn is null and  ovst.vn  like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+[31m-             ";[m
+[32m+[m				[32mwhere ovst.vn like'$vn4digit%' ";[m
+ [m
+ [m
+ [m
+[36m@@ -4900,19 +4645,6 @@[m [mfunction get_rows_Community_service_Error_detail($vn4digit) {[m
+ 				HAVING count(concat(ovst_community_service.vn,ovst_community_service.ovst_community_service_type_id)) >1 )  community[m
+ 				on ovst.vn = community.vn[m
+ 				where ovst.vn like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+[31m-            UNION [m
+[31m-[m
+[31m-              [m
+[31m-[m
+[31m-                select 'CS9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'CS9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(ovst.vn),0) as CC [m
+[31m-                FROM ovst[m
+[31m-                        inner join  opdscreen  on ovst.vn = opdscreen.vn[m
+[31m-                        LEFT JOIN ovst_community_service on opdscreen.vn = ovst_community_service.vn                                        [m
+[31m-                        where (cc LIKE '%เยี่ยมบ้าน%'   or cc LIKE 'เยี่ยมบ้าน%' or cc LIKE '%เยี่ยม%'   )  and ovst_community_service.vn is null and  ovst.vn  like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+ 				  order by CC desc , ERROR_CODE ";[m
+ [m
+ [m
+[36m@@ -5432,12 +5164,8 @@[m [mfunction get_row_Epi_Error_all($vn4digit) {[m
+                                                 ELSE[m
+                                                     (case when wbc_vaccine.export_vaccine_code in('R11','R12','R21','R22','R23') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z258') [m
+                                                         ELSE[m
+[31m-                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) [m
+[31m-                                                                    ELSE[m
+[31m-                                                                     (case when wbc_vaccine.export_vaccine_code in('D21','D22','D23') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246','Z241') GROUP BY vn) [m
+[31m-                                                                     END)[m
+[32m+[m[32m                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) END)[m[41m [m
+                                                             end) [m
+[31m-                                                    end) [m
+                                             [m
+                                                 end)    [m
+                                         end) [m
+[36m@@ -5520,19 +5248,15 @@[m [mfunction get_row_Epi_Error_all($vn4digit) {[m
+ [m
+                 select 'EP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP9902'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+                     from ovst[m
+[31m-                     inner join ([m
+[31m-                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk ,person_vaccine.vaccine_name ,village_student.person_id [m
+[32m+[m[32m                    inner join ([m
+[32m+[m[32m                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk[m[41m [m
+                     from village_student_vaccine[m
+                     left join village_student on village_student_vaccine.village_student_id =  village_student.village_student_id[m
+                     left join village_student_vaccine_list on village_student_vaccine.village_student_vaccine_id = village_student_vaccine_list.village_student_vaccine_id[m
+[31m-                    LEFT JOIN student_vaccine on village_student_vaccine_list.student_vaccine_id  = student_vaccine.student_vaccine_id[m
+[31m-                    INNER JOIN ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn[m
+[31m-                    left join person_vaccine on ovst_vaccine.person_vaccine_id = person_vaccine.person_vaccine_id[m
+[31m-                    where  student_vaccine.export_vaccine_code = person_vaccine.export_vaccine_code[m
+[32m+[m[32m                    left join ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn[m
+                     HAVING vn_chk is not null[m
+[31m-                    ) student_vaccine_chk on student_vaccine_chk.vn =  ovst.vn[m
+[31m-                    LEFT JOIN patient on ovst.hn = patient.hn [m
+[31m-                    where ovst.vn   like '$vn4digit%'[m
+[32m+[m[32m                    ) student_vaccine on student_vaccine.vn =  ovst.vn[m
+[32m+[m[32m                    where ovst.vn like '$vn4digit%'[m
+ [m
+ [m
+ [m
+[36m@@ -5589,9 +5313,9 @@[m [mfunction get_rows_Epi_Error_detail($vn4digit) {[m
+ [m
+             UNION[m
+ [m
+[31m-             select 'EP2001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP2001'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+[32m+[m[32m                select 'EP2001' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP2001'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+ [m
+[31m-                from ovst [m
+[32m+[m[32m                 from ovst[m[41m [m
+                 INNER JOIN (select person_wbc_service.vn,wbc_vaccine.wbc_vaccine_name, person_wbc_vaccine_detail.wbc_vaccine_id ,[m
+                    (case when wbc_vaccine.export_vaccine_code in('010') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z232')[m
+                     else[m
+[36m@@ -5605,12 +5329,8 @@[m [mfunction get_rows_Epi_Error_detail($vn4digit) {[m
+                                                 ELSE[m
+                                                     (case when wbc_vaccine.export_vaccine_code in('R11','R12','R21','R22','R23') then  (select icd10 from ovstdiag where vn = person_wbc_service.vn and icd10 = 'Z258') [m
+                                                         ELSE[m
+[31m-                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) [m
+[31m-                                                                    ELSE[m
+[31m-                                                                     (case when wbc_vaccine.export_vaccine_code in('D21','D22','D23') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246','Z241') GROUP BY vn) [m
+[31m-                                                                     END)[m
+[32m+[m[32m                                                            (case when wbc_vaccine.export_vaccine_code in('091','092','093') then  (select GROUP_CONCAT(icd10) from ovstdiag where vn = person_wbc_service.vn and icd10 in('Z271','Z246') GROUP BY vn) END)[m[41m [m
+                                                             end) [m
+[31m-                                                    end) [m
+                                             [m
+                                                 end)    [m
+                                         end) [m
+[36m@@ -5695,18 +5415,14 @@[m [mfunction get_rows_Epi_Error_detail($vn4digit) {[m
+                 select 'EP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'EP9902'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC[m
+                     from ovst[m
+                     inner join ([m
+[31m-                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk ,person_vaccine.vaccine_name ,village_student.person_id [m
+[32m+[m[32m                    select village_student_vaccine.vn ,  ovst_vaccine.vn as vn_chk[m[41m [m
+                     from village_student_vaccine[m
+                     left join village_student on village_student_vaccine.village_student_id =  village_student.village_student_id[m
+                     left join village_student_vaccine_list on village_student_vaccine.village_student_vaccine_id = village_student_vaccine_list.village_student_vaccine_id[m
+[31m-                    LEFT JOIN student_vaccine on village_student_vaccine_list.student_vaccine_id  = student_vaccine.student_vaccine_id[m
+[31m-                    INNER JOIN ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn[m
+[31m-                    left join person_vaccine on ovst_vaccine.person_vaccine_id = person_vaccine.person_vaccine_id[m
+[31m-                    where  student_vaccine.export_vaccine_code = person_vaccine.export_vaccine_code[m
+[32m+[m[32m                    left join ovst_vaccine on village_student_vaccine.vn  = ovst_vaccine.vn[m
+                     HAVING vn_chk is not null[m
+[31m-                    ) student_vaccine_chk on student_vaccine_chk.vn =  ovst.vn[m
+[31m-                    LEFT JOIN patient on ovst.hn = patient.hn [m
+[31m-                    where ovst.vn  like '$vn4digit%'[m
+[32m+[m[32m                    ) student_vaccine on student_vaccine.vn =  ovst.vn[m
+[32m+[m[32m                    where ovst.vn like '$vn4digit%'[m
+ [m
+ [m
+                  order by CC desc , ERROR_CODE ";[m
+[36m@@ -5804,9 +5520,9 @@[m [mfunction get_rows_Epi_Error_detail_list($error_code,$vn4digit, $xls) {[m
+                    $Items = "บัญชี 3";[m
+                 }else{[m
+                  if($result['Items']=='EPI'){[m
+[31m-                        $Items = "บัญชี 4-5";[m
+[32m+[m[32m                        $Items = "บัญชี 4 ";[m
+                     }else{[m
+[31m-                             $Items = "จากที่อื่น";[m
+[32m+[m[32m                            $Items = "บัญชี 5";[m
+                         }[m
+                 }[m
+         }[m
+[36m@@ -5938,24 +5654,6 @@[m [mfunction get_row_Nutrition_Error_all($vn4digit) {[m
+     //echo ' -det30 =  '.$det30 . '-/- dst230 ='.$dst230 ;[m
+ [m
+ [m
+[31m-    //-------start 60 month  --------------[m
+[31m-    $dst60 = date_create($first_day);[m
+[31m-    date_add($dst60, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst60 =  date_format($dst60, 'Y-m-d');[m
+[31m-[m
+[31m-    $det60 = date_create($dst60);[m
+[31m-    date_add($det60, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det60 =  date_format($det60, 'Y-m-d');  [m
+[31m-[m
+[31m-    $dst260 = date_create($last_day);[m
+[31m-    date_add($dst260, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst260 =  date_format($dst260, 'Y-m-d'); [m
+[31m-[m
+[31m-    $det260 = date_create($dst260);[m
+[31m-    date_add($det260, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det260 =  date_format($det260, 'Y-m-d');  [m
+[31m-    //-------- END 60 Month[m
+[31m-    [m
+ [m
+         [m
+    // $det =  DATE_ADD(@ds1, INTERVAL -299 DAY) ;[m
+[36m@@ -6011,23 +5709,8 @@[m [mfunction get_row_Nutrition_Error_all($vn4digit) {[m
+ [m
+ [m
+ [m
+[31m-[m
+[31m-            UNION[m
+[31m-[m
+[31m-[m
+[31m-            select 'NU9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC[m
+[31m-            FROM person [m
+[31m-             LEFT JOIN (SELECT nutrition_date ,person_epi.person_id[m
+[31m-            from person_epi_nutrition[m
+[31m-            LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id[m
+[31m-            ) person_chk on person.person_id = person_chk.person_id [m
+[31m-            and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)[m
+[31m-            where birthdate between '$det60' and '$dst260' and person.house_regist_type_id in(1,3) and person_chk.nutrition_date is null[m
+[31m-[m
+[31m-[m
+             UNION[m
+ [m
+[31m-[m
+             select 'NU1190' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU1190'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC[m
+             from person[m
+             INNER JOIN (SELECT person_epi.person_id ,person_epi_nutrition.body_weight ,person_epi_nutrition.nutrition_date ,person_epi_nutrition.vn [m
+[36m@@ -6269,25 +5952,6 @@[m [mfunction get_rows_Nutrition_Error_detail($vn4digit) {[m
+ [m
+ [m
+ [m
+[31m-    //-------start 60 month  --------------[m
+[31m-    $dst60 = date_create($first_day);[m
+[31m-    date_add($dst60, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst60 =  date_format($dst60, 'Y-m-d');[m
+[31m-[m
+[31m-    $det60 = date_create($dst60);[m
+[31m-    date_add($det60, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det60 =  date_format($det60, 'Y-m-d');  [m
+[31m-[m
+[31m-    $dst260 = date_create($last_day);[m
+[31m-    date_add($dst260, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst260 =  date_format($dst260, 'Y-m-d'); [m
+[31m-[m
+[31m-    $det260 = date_create($dst260);[m
+[31m-    date_add($det260, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det260 =  date_format($det260, 'Y-m-d');  [m
+[31m-    //-------- END 60 Month[m
+[31m-[m
+[31m-[m
+     $sql = " select 'NU9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9901'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC[m
+             FROM person [m
+             LEFT JOIN (SELECT nutrition_date ,person_wbc.person_id[m
+[36m@@ -6338,20 +6002,6 @@[m [mfunction get_rows_Nutrition_Error_detail($vn4digit) {[m
+ [m
+ [m
+ [m
+[31m-            UNION[m
+[31m-[m
+[31m-[m
+[31m-            select 'NU9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC[m
+[31m-            FROM person [m
+[31m-             LEFT JOIN (SELECT nutrition_date ,person_epi.person_id[m
+[31m-            from person_epi_nutrition[m
+[31m-            LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id[m
+[31m-            ) person_chk on person.person_id = person_chk.person_id [m
+[31m-            and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)[m
+[31m-            where birthdate between '$det60' and '$dst260' and person.house_regist_type_id in(1,3) and person_chk.nutrition_date is null[m
+[31m-[m
+[31m-[m
+[31m-[m
+             UNION[m
+ [m
+             select 'NU1190' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where     ERROR_CODE = 'NU1190'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT(person.person_id)),0) as CC[m
+[36m@@ -6598,25 +6248,6 @@[m [mfunction get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {[m
+ [m
+ [m
+ [m
+[31m-    //-------start 60 month  --------------[m
+[31m-    $dst60 = date_create($first_day);[m
+[31m-    date_add($dst60, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst60 =  date_format($dst60, 'Y-m-d');[m
+[31m-[m
+[31m-    $det60 = date_create($dst60);[m
+[31m-    date_add($det60, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det60 =  date_format($det60, 'Y-m-d');  [m
+[31m-[m
+[31m-    $dst260 = date_create($last_day);[m
+[31m-    date_add($dst260, date_interval_create_from_date_string('-60 month'));[m
+[31m-    $dst260 =  date_format($dst260, 'Y-m-d'); [m
+[31m-[m
+[31m-    $det260 = date_create($dst260);[m
+[31m-    date_add($det260, date_interval_create_from_date_string('-29 days'));[m
+[31m-    $det260 =  date_format($det260, 'Y-m-d');  [m
+[31m-    //-------- END 60 Month[m
+[31m-[m
+[31m-[m
+     $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";[m
+     $query = mysql_query($sql);[m
+    [m
+[36m@@ -6640,10 +6271,6 @@[m [mfunction get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {[m
+              $sql1 = $sql1." and  birthdate between '$det42' and '$dst242' GROUP BY person.person_id ";[m
+             break;[m
+ [m
+[31m-        case 'NU9906':[m
+[31m-             $sql1 = $sql1." and  birthdate between '$det60' and '$dst260' GROUP BY person.person_id ";[m
+[31m-            break;[m
+[31m-[m
+         case 'NU9905':[m
+              $sql1 = " select concat(person.pname ,'',person.fname,' ',person.lname) as ptname,person.cid,person.person_id  as pid ,person.birthdate  , person_pp_chk.nutrition_date  as '@start_date' , [m
+                        person_pp_chk.nutrition_date as '@end_date' [m
+[36m@@ -6690,19 +6317,6 @@[m [mfunction get_rows_Nutrition_Error_detail_list($error_code,$vn4digit, $xls) {[m
+                                 ) person_chk on person.person_id = person_chk.person_id [m
+                                 and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 42 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 42 month)), INTERVAL 29 day)[m
+                                 where birthdate between '$det42' and '$dst242'  and person.house_regist_type_id in(1,3) [m
+[31m-[m
+[31m-                    UNION[m
+[31m-[m
+[31m-                    SELECT '60' as items,person.* ,person_chk.nutrition_date[m
+[31m-                    FROM person [m
+[31m-                                LEFT JOIN (SELECT nutrition_date ,person_epi.person_id[m
+[31m-                                from person_epi_nutrition[m
+[31m-                                LEFT JOIN person_epi on person_epi_nutrition.person_epi_id = person_epi.person_epi_id[m
+[31m-                                ) person_chk on person.person_id = person_chk.person_id [m
+[31m-                                and person_chk.nutrition_date BETWEEN DATE_ADD(person.birthdate, INTERVAL 60 month) and DATE_ADD((DATE_ADD(person.birthdate, INTERVAL 60 month)), INTERVAL 29 day)[m
+[31m-                                where birthdate between '$det60' and '$dst260'  and person.house_regist_type_id in(1,3) [m
+[31m-[m
+[31m-[m
+                     ) person_chk on ovst.vstdate = person_chk.nutrition_date and ovst.hn = person_chk.patient_hn[m
+                     LEFT JOIN pp_special on ovst.vn = pp_special.vn[m
+                     where pp_special.vn is null [m
+[36m@@ -6828,69 +6442,6 @@[m [mfunction get_rows_Special_pp_Error_all($vn4digit) {[m
+                 left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+                 where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')[m
+                 and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9902'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code [m
+[31m-                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')[m
+[31m-                and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9903'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code [m
+[31m-                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')[m
+[31m-                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')[m
+[31m-                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' [m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9905'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                INNER JOIN ovst on  pp_special.vn = ovst.vn[m
+[31m-                INNER JOIN patient on ovst.hn = patient.hn[m
+[31m-                where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )[m
+[31m-                AND DATEDIFF( (SELECT ov1.vstdate [m
+[31m-                from pp_special pp1[m
+[31m-                INNER JOIN ovst ov1 on  pp1.vn = ov1.vn[m
+[31m-                where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))[m
+[31m-                and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1),ovst.vstdate) NOT BETWEEN'14' and '30' and   pp_special.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC [m
+[31m-            from pp_special [m
+[31m-            INNER JOIN ovst on  pp_special.vn = ovst.vn[m
+[31m-            INNER JOIN patient on ovst.hn = patient.hn[m
+[31m-            where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )[m
+[31m-             and (SELECT pp1.vn [m
+[31m-            from pp_special pp1[m
+[31m-            INNER JOIN ovst ov1 on  pp1.vn = ov1.vn[m
+[31m-            where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))[m
+[31m-            and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1) is null and   pp_special.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+               ";[m
+ [m
+ [m
+[36m@@ -6949,69 +6500,6 @@[m [mfunction get_rows_Special_pp_Error_detail($vn4digit) {[m
+ [m
+ [m
+ [m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9902'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code [m
+[31m-                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')[m
+[31m-                and person.sex = 1  and ovst_seq.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9903' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9903'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code [m
+[31m-                    in('1B0040','1B0041 ','1B0042','1B0043 ','1B0044','1B0045','1B30','1B40')[m
+[31m-                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9904' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9904'  ) as 'ERROR_DETAIL' ,  ifnull(count(DISTINCT ovst_seq.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                left JOIN pp_special_type on pp_special.pp_special_type_id = pp_special_type.pp_special_type_id[m
+[31m-                left JOIN ovst_seq on pp_special.vn = ovst_seq.vn[m
+[31m-                left JOIN person on ovst_seq.pcu_person_id = person.person_id[m
+[31m-                where pp_special_type.pp_special_code in('1B0030','1B0031','1B0032','1B0033','1B0034','1B0035','1B0036','1B0037','1B0039')[m
+[31m-                and year(CURDATE()) - year(person.birthdate)<20  and ovst_seq.vn like'$vn4digit%' [m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9905' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9905'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC [m
+[31m-                from pp_special [m
+[31m-                INNER JOIN ovst on  pp_special.vn = ovst.vn[m
+[31m-                INNER JOIN patient on ovst.hn = patient.hn[m
+[31m-                where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )[m
+[31m-                AND DATEDIFF( (SELECT ov1.vstdate [m
+[31m-                from pp_special pp1[m
+[31m-                INNER JOIN ovst ov1 on  pp1.vn = ov1.vn[m
+[31m-                where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))[m
+[31m-                and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1),ovst.vstdate) NOT BETWEEN'14' and '30' and   pp_special.vn like'$vn4digit%'  [m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                UNION[m
+[31m-[m
+[31m-                select 'SP9906' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SP9906'  ) as 'ERROR_DETAIL' ,  ifnull(count(pp_special.vn),0) as CC [m
+[31m-            from pp_special [m
+[31m-            INNER JOIN ovst on  pp_special.vn = ovst.vn[m
+[31m-            INNER JOIN patient on ovst.hn = patient.hn[m
+[31m-            where pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code = '1B261' )[m
+[31m-             and (SELECT pp1.vn [m
+[31m-            from pp_special pp1[m
+[31m-            INNER JOIN ovst ov1 on  pp1.vn = ov1.vn[m
+[31m-            where pp1.pp_special_type_id in(SELECT pp_special_type_id FROM pp_special_type where pp_special_code in('1B262','1B260'))[m
+[31m-            and ov1.vn > pp_special.vn and ov1.hn = ovst.hn limit 1) is null and   pp_special.vn like'$vn4digit%'  [m
+ [m
+                  order by CC desc , ERROR_CODE ";[m
+     //echo $sql;    [m
+[36m@@ -7989,7 +7477,7 @@[m [mfunction get_rows_Service_Error_all($vn4digit) {[m
+           select 'SE9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SE9902'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct ovst.vn),0) as CC[m
+             from ovst[m
+             left join spclty on spclty.spclty = ovst.spclty[m
+[31m-                  where ovst.spclty is null  and ovst.vn like'$vn4digit%' [m
+[32m+[m[32m                  where spclty.spclty is null  and ovst.vn like'$vn4digit%'[m[41m [m
+ [m
+                 ";[m
+    //echo $sql;    [m
+[36m@@ -8017,7 +7505,7 @@[m [mfunction get_rows_Service_Error_detail($vn4digit) {[m
+           select 'SE9902' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'SE9902'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct ovst.vn),0) as CC[m
+             from ovst[m
+             left join spclty on spclty.spclty = ovst.spclty[m
+[31m-                  where ovst.spclty is null  and ovst.vn like'$vn4digit%' [m
+[32m+[m[32m                  where spclty.spclty is null  and ovst.vn like'$vn4digit%'[m[41m [m
+             [m
+                  order by CC desc , ERROR_CODE ";[m
+     //echo $sql;    [m
+[36m@@ -8108,131 +7596,6 @@[m [mfunction get_rows_Service_Error_detail_list($error_code, $vn4digit, $xls) {[m
+ [m
+ [m
+ [m
+[31m-function get_rows_Prenatal_Error_all($vn4digit) {[m
+[31m-    $date_stage_ment = get_month_stagement($vn4digit);[m
+[31m-    $sql = "select 'PR9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PR9901'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct person_anc.person_id),0) as CC[m
+[31m-           from person_anc_service [m
+[31m-        left JOIN person_anc on person_anc_service.person_anc_id = person_anc.person_anc_id[m
+[31m-        INNER JOIN (SELECT * from lab_head where form_name like'LAB_ANC%' and confirm_report='Y') lab_head  on person_anc_service.vn = lab_head.vn [m
+[31m-        LEFT JOIN person_anc_lab on person_anc_service.person_anc_service_id = person_anc_lab.person_anc_service_id[m
+[31m-        where person_anc_lab.anc_lab_result is null and person_anc.lmp BETWEEN  $date_stage_ment [m
+[31m-[m
+[31m-[m
+[31m-                ";[m
+[31m-   //echo $sql;    [m
+[31m-    $CC = 0;[m
+[31m-    $query = mysql_query($sql);[m
+[31m-    $rows = mysql_num_rows($query) or die(mysql_error());[m
+[31m-    while ($result = mysql_fetch_array($query)) {[m
+[31m-        $CC = $CC + number_format($result['CC']);[m
+[31m-    }[m
+[31m-    return $CC;[m
+[31m-}[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-function get_rows_Prenatal_Error_detail($vn4digit) {[m
+[31m-    $date_stage_ment = get_month_stagement($vn4digit);[m
+[31m-    $sql = "select 'PR9901' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PR9901'  ) as 'ERROR_DETAIL' ,  ifnull(count( distinct person_anc.person_id),0) as CC[m
+[31m-           from person_anc_service [m
+[31m-        left JOIN person_anc on person_anc_service.person_anc_id = person_anc.person_anc_id[m
+[31m-        INNER JOIN (SELECT * from lab_head where form_name like'LAB_ANC%' and confirm_report='Y') lab_head  on person_anc_service.vn = lab_head.vn [m
+[31m-        LEFT JOIN person_anc_lab on person_anc_service.person_anc_service_id = person_anc_lab.person_anc_service_id[m
+[31m-        where person_anc_lab.anc_lab_result is null and person_anc.lmp BETWEEN  $date_stage_ment[m
+[31m-[m
+[31m-        [m
+[31m-         [m
+[31m-            [m
+[31m-                 order by CC desc , ERROR_CODE ";[m
+[31m-    //echo $sql;    [m
+[31m-    $CC = 0;[m
+[31m-    $query = mysql_query($sql) or die(mysql_error());[m
+[31m-    $aherf = "";[m
+[31m-    //$rows = mysql_num_rows($query);[m
+[31m-    while ($result = mysql_fetch_array($query)) {[m
+[31m-        $ERROR_CODE = $result['ERROR_CODE'];[m
+[31m-        $ERROR_DETAIL = $result['ERROR_DETAIL'];[m
+[31m-        $SHOW_ERROR = "< " . $ERROR_CODE . " > " . $ERROR_DETAIL;[m
+[31m-        $CC = number_format($result['CC']);[m
+[31m-        if ($CC == 0) {[m
+[31m-            $aherf = $aherf . "<span class='list-group-item list-group-item-success'> $SHOW_ERROR  <span class='badge'>$CC</span></span>";[m
+[31m-        } else {[m
+[31m-            $aherf = $aherf . "<a href='prenatal_detail.php?err=$ERROR_CODE&vn=$vn4digit' class='list-group-item list-group-item-danger'> $SHOW_ERROR  <span class='badge'>$CC</span></a>";[m
+[31m-        }[m
+[31m-    }[m
+[31m-    return $aherf;[m
+[31m-}[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-function get_rows_Prenatal_Error_detail_list($error_code, $vn4digit, $xls) {[m
+[31m-[m
+[31m-    $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";[m
+[31m-    $query = mysql_query($sql);[m
+[31m-[m
+[31m-    while ($result = mysql_fetch_array($query)) {[m
+[31m-        $sql1 = $result['sql_script'];[m
+[31m-    }[m
+[31m-    //echo $sql1;[m
+[31m-    if ($xls == "export") {[m
+[31m-        $tb_title = "";[m
+[31m-        $tb_footer = "";[m
+[31m-    } else {[m
+[31m-        $tb_title = "<TABLE class='table'>";[m
+[31m-        $tb_footer = "</TABLE>";[m
+[31m-    }[m
+[31m-[m
+[31m-    $tb = $tb_title . "     <tr>[m
+[31m-                                      <th>#</th>[m
+[31m-                                      <th>PID</th>[m
+[31m-                                      <th>ชื่อ - สกุล </th>[m
+[31m-                                      <th>CID</th>[m
+[31m-                                      <th>ครรภ์ที่</th>[m
+[31m-                                      <th>วันที่รับบริการ</th>[m
+[31m-                                      <th>เวลารับบริการ</th>[m
+[31m-                                                                           [m
+[31m-                                 </tr>[m
+[31m-[m
+[31m-                                      ";[m
+[31m-    $i = 0;[m
+[31m-    //echo $sql1;[m
+[31m-[m
+[31m-    $query2 = mysql_query($sql1 ." BETWEEN ". get_month_stagement($vn4digit));[m
+[31m-[m
+[31m-[m
+[31m-    $rows = mysql_num_rows($query2);[m
+[31m-    while ($result = mysql_fetch_array($query2)) {[m
+[31m-        $ptname = $result['ptname'];[m
+[31m-        $vstdate = get_date_show($result['vstdate']);[m
+[31m-        $vsttime = $result['vsttime'];[m
+[31m-        $person_id = $result['person_id'];[m
+[31m-        $cid = $result['cid'];[m
+[31m-        $preg_no = $result['preg_no'];[m
+[31m-        $i = $i + 1;[m
+[31m-        //$data   = $data. $i  . " | " . $person_id ." | ".$ptname." | ". $cid  . " | ".get_date_show($DATEServ).'<br>';[m
+[31m-        $tb = $tb . "           <tr>[m
+[31m-                                      <td >$i</td>  [m
+[31m-                                      <td>$person_id </td>                                   [m
+[31m-                                      <td>$ptname </td>[m
+[31m-                                      <td>$cid</td>[m
+[31m-                                      <td>$preg_no</td>[m
+[31m-                                      <td>$vstdate</td>[m
+[31m-                                      <td>$vsttime</td>                                      [m
+[31m-[m
+[31m-                                  </tr> [m
+[31m-[m
+[31m-                                  ";[m
+[31m-    }[m
+[31m-    return $tb . $tb_footer;[m
+[31m-}[m
+[31m-[m
+[31m-[m
+[31m-[m
+ [m
+ [m
+ ?>[m
+\ No newline at end of file[m
+[1mdiff --git a/prenatal_detail.php b/prenatal_detail.php[m
+[1mdeleted file mode 100644[m
+[1mindex a3cc10d..0000000[m
+[1m--- a/prenatal_detail.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,48 +0,0 @@[m
+[31m-<?php[m
+[31m-        [m
+[31m-        session_start();[m
+[31m-        include("conn/conn.php");[m
+[31m-        include("libs/function.php");[m
+[31m-        include("main.php");[m
+[31m-        $_SESSION['err'] = $_GET['err'];[m
+[31m-        $vn4digit = $_SESSION['vn4digit'];[m
+[31m-       // echo $_SESSION['err'] ;[m
+[31m-[m
+[31m-?>[m
+[31m-[m
+[31m-[m
+[31m-                <div id="page-wrapper">[m
+[31m-                <div class="container-fluid">[m
+[31m-                <!-- Page Heading -->[m
+[31m-                <div class="row">[m
+[31m-                    <div class="col-lg-12">[m
+[31m-                       <ol class="breadcrumb">[m
+[31m-                             <!--<li class="active"><a href="index.php">หน้าแรก</a></li>-->[m
+[31m-                            <li class="active"><a href="prenatal_index.php?vn=<?=$vn4digit;?>">แสดงข้อมูล PRENATAL <?php echo get_month_show($vn4digit); ?></a></li>[m
+[31m-                            <li class="active">แสดงรายชื่อที่ Error -::- <?=$_SESSION['err'];?>  -::- <?=get_Error_Detail_Name($_SESSION['err']);?></li>[m
+[31m-                            [m
+[31m-                        </ol> [m
+[31m-[m
+[31m-                    </div>[m
+[31m-[m
+[31m-                </div>[m
+[31m-[m
+[31m-                <div class="row">[m
+[31m-                            <div class="panel panel-primary">[m
+[31m-                                <div class="panel-heading">Error CODE -::- <?=$_SESSION['err'];?> -::- <?=get_Error_Detail_Name($_SESSION['err']);?>[m
+[31m-                                        <a href="export_xls.php?err=<?=$_SESSION['err'];?>&vn=<?=$vn4digit;?>" class="btn btn-success btn-sm active" role="button"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Excel </a>[m
+[31m-                                </div>[m
+[31m-                                    <div class="panel-body">[m
+[31m-                                        <div class="col-md-12"> [m
+[31m-                                            <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >[m
+[31m-                                                 <div class="list-group">[m
+[31m-                                                    <?=get_rows_Prenatal_Error_detail_list($_SESSION['err'],$_SESSION['vn4digit'],"No");?>[m
+[31m-                                                </div>[m
+[31m-                                            </div> [m
+[31m-                                        </div>[m
+[31m-                                    </div>[m
+[31m-                            </div>[m
+[31m-                    </div>[m
+[31m-                </div>[m
+[31m-[m
+[31m-<?php include "footer.php"; ?>[m
+\ No newline at end of file[m
+[1mdiff --git a/prenatal_index.php b/prenatal_index.php[m
+[1mdeleted file mode 100644[m
+[1mindex 061cedf..0000000[m
+[1m--- a/prenatal_index.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,48 +0,0 @@[m
+[31m-<?php[m
+[31m-        [m
+[31m-        session_start();[m
+[31m-        include("conn/conn.php");[m
+[31m-        include("libs/function.php");[m
+[31m-        include("main.php");[m
+[31m-        if(empty($_GET['vn'])){[m
+[31m-[m
+[31m-            $vn4digit = $_SESSION['vn4digit'];[m
+[31m-        [m
+[31m-        }else{[m
+[31m-[m
+[31m-            $vn4digit = $_GET['vn'];[m
+[31m-[m
+[31m-         }[m
+[31m-?>[m
+[31m-[m
+[31m-[m
+[31m-                <div id="page-wrapper">[m
+[31m-                <div class="container-fluid">[m
+[31m-                <!-- Page Heading -->[m
+[31m-                <div class="row">[m
+[31m-                    <div class="col-lg-12">[m
+[31m-                       <ol class="breadcrumb">[m
+[31m-                             <!--<li class="active"><a href="index.php">หน้าแรก</a></li>-->[m
+[31m-                            <li class="active">แสดงข้อมูล PRENATAL <?php echo get_month_show($vn4digit); ?></li>[m
+[31m-                        </ol> [m
+[31m-                    </div>[m
+[31m-[m
+[31m-                </div>[m
+[31m-[m
+[31m-                <div class="row">[m
+[31m-                            <div class="panel panel-primary">[m
+[31m-                                <div class="panel-heading">PRENATAL</div>[m
+[31m-                                    <div class="panel-body">[m
+[31m-                                        <div class="col-md-8"> [m
+[31m-                                            <div class="bs-callout bs-callout-defult" style="border-bottom: dashed 1px #FF00FF;" >[m
+[31m-                                                 <div class="list-group">[m
+[31m-                                                    <?=get_rows_Prenatal_Error_detail($vn4digit);?>[m
+[31m-                                                </div>[m
+[31m-                                            </div> [m
+[31m-                                        </div>[m
+[31m-                                    </div>[m
+[31m-                            </div>[m
+[31m-                    </div>[m
+[31m-                </div>[m
+[31m-[m
+[31m-<?php include "footer.php"; ?>[m
+\ No newline at end of file[m
