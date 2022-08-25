@@ -316,7 +316,12 @@ function get_row_person_Error_all() {
                  select 'PE9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PE9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person.person_id)),0) as CC 
                     FROM person where (cid = mother_cid)
 
+                UNION
 
+                    select 'PE1105' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PE1105'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person.person_id)),0) as CC 
+                    from person 
+                    left join patient on person.cid = patient.cid 
+                    where (person.pname ='' or person.pname is null)  
 
 				 ";
 
@@ -435,6 +440,15 @@ function get_rows_person_Error_detail() {
 
                  select 'PE9911' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PE9911'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person.person_id)),0) as CC 
                     FROM person where (cid = mother_cid)
+
+                   
+                UNION
+
+                select 'PE1105' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'PE1105'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(person.person_id)),0) as CC 
+                from person 
+                left join patient on person.cid = patient.cid 
+                where (person.pname ='' or person.pname is null)  
+
 
 
 				order by CC desc , ERROR_CODE ";
