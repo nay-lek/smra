@@ -79,13 +79,104 @@ $error_code = $_GET['err'];
           break;
 
           case 'DT':
-          $vn4digit = $_GET['vn'];
-           $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
-          $query1 =  mysql_query($sql);      
-          while ($result=mysql_fetch_array($query1)) {
-             $sql1 = $result['sql_script'] . " and vn like'$vn4digit%'";
-          }
-          break;
+            $vn4digit = $_GET['vn'];
+                  if( $error_code=='DT9300' || $error_code=='DT9301' || $error_code=='DT9302' || $error_code=='DT9303' ){
+                          $dateserv_12y = explode("and",Get_date_person_age($vn4digit,12,'vist'));
+                         
+
+                    switch($error_code){
+                          case 'DT9303' : $age_select = 12;
+                          break;
+
+                          case 'DT9302' : $age_select = 9;
+                          break;
+
+                          case 'DT9301' : $age_select = 6;
+                          break;
+
+                          case 'DT9300' : $age_select = 3;
+                          break;
+                          }
+
+                          $sql1  =  "	SELECT ps.patient_hn as hn , PtName(ps.patient_hn,ps.cid) as ptname , ps.cid , ".$dateserv_12y[0]." as vstdate_start , ".$dateserv_12y[1]." as vstdate_end , dental_chk.date_remine_new as day_count , 
+                          ps.birthdate, '' as count_date_service , chk_color
+                            from person ps
+                                  JOIN (( SELECT 'G12Age' as 'items' , person.person_id 
+                                                          ,PtName(person.patient_hn,person.cid) as pt_name,person.cid 
+                                                          , person.birthdate 
+                                                          , if((SELECT max(ovst.vstdate) 
+                                                                    from dental_care 
+                                                                    INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                    where ovst.vstdate BETWEEN  ".Get_date_person_age($vn4digit,$age_select,'vist')."  
+                                                                    and  ovst.hn = person.patient_hn 
+                                                                    GROUP BY ovst.hn 
+                                                                    ) >=  DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year),'Black' ,                                
+                                                                if((SELECT max(ovst.vstdate) 
+                                                                    from dental_care 
+                                                                    INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                    where ovst.vstdate BETWEEN  ".Get_date_person_age($vn4digit,$age_select,'vist')." 
+                                                                    and  ovst.hn = person.patient_hn 
+                                                                    GROUP BY ovst.hn 
+                                                                ) <  DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year) , 'Green' ,
+                                                                    if(datediff(DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year),now()) BETWEEN 31 and 90 , 'Yelow' , 
+                                                                            if(datediff(DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year),now()) BETWEEN 1 and 30 , 'Red' , 
+                                                                                if(datediff(DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year),now()) < 1 , 'Black' ,  
+                                                                '')))))  as 'chk_color'
+                                                            , datediff(DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year),now()) 	as 'date_remine_new'  
+                                                            , DATE_ADD(person.birthdate,INTERVAL ".($age_select+1)." year) as 'Add_1year'
+                                                          , (SELECT count(DISTINCT(ovst.vn)) from dental_care  
+                                                                  INNER JOIN ovst on dental_care.vn = ovst.vn 
+                                                                  where ovst.vstdate   BETWEEN ".Get_date_person_age($vn4digit,$age_select,'vist')."  
+                                                                and  ovst.hn = person.patient_hn  
+                                                          ) as count_dental 
+                                                            ,
+                                                          (SELECT max(ovst.vstdate) 
+                                                                from dental_care 
+                                                                INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                where ovst.vstdate   BETWEEN ".Get_date_person_age($vn4digit,$age_select,'vist')." 
+                                                                and  ovst.hn = person.patient_hn 
+                                                                GROUP BY ovst.hn 
+                                                          ) as chk_visit_date_service 
+
+                                                          , if((SELECT max(ovst.vstdate) 
+                                                                from dental_care 
+                                                                INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                where ovst.vstdate  BETWEEN ".Get_date_person_age($vn4digit,$age_select,'vist')." 
+                                                                and  ovst.hn = person.patient_hn 
+                                                                GROUP BY ovst.hn 
+                                                          ) is null ,  datediff(".$dateserv_12y[1]."  , now()) , null)  as 'date_remine' 
+                                                          ,if((SELECT max(ovst.vstdate) 
+                                                                from dental_care 
+                                                                INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                where ovst.vstdate BETWEEN ".Get_date_person_age($vn4digit,$age_select,'vist')." 
+                                                                and  ovst.hn = person.patient_hn 
+                                                                GROUP BY ovst.hn 
+                                                          ) is null , 0   ,
+                                                                                datediff((SELECT max(ovst.vstdate) 
+                                                                                    from dental_care 
+                                                                                    INNER JOIN ovst on dental_care.vn  =  ovst.vn 
+                                                                                    where ovst.vstdate BETWEEN ".Get_date_person_age($vn4digit,$age_select,'vist')." 
+                                                                                    and  ovst.hn = person.patient_hn 
+                                                                                    GROUP BY ovst.hn 
+                                                                                ) , ".$dateserv_12y[0]." )) as 'count_DateSev2DateVisit' 
+                                                          from person 
+                                                          where person.birthdate BETWEEN ".Get_date_person_age($vn4digit,$age_select,'DOB')." 
+                                                          and person.house_regist_type_id in(1,3)  
+                                                          GROUP BY person.cid 
+                                                          HAVING chk_color in('red','Yelow','Black') || chk_visit_date_service is null 
+                                                          ORDER BY birthdate
+                                                          ) ) dental_chk on ps.cid = dental_chk.cid 
+                                                            ORDER BY day_count ";
+
+
+              }else{
+              $sql = "select sql_script from pk_err_code_chk where ERROR_CODE = '$error_code'";
+              $query1 =  mysql_query($sql);   
+                  while ($result=mysql_fetch_array($query1)) {
+                    $sql1 = $result['sql_script'] . " and vn like'$vn4digit%'";
+                  }
+              }    
+             break;
 
 
 
@@ -600,7 +691,6 @@ $error_code = $_GET['err'];
               }
           break;
       }
-
 
 
 $query = mysql_query($sql1) or die(mysql_error());

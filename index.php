@@ -1,5 +1,5 @@
 <?php
-        
+        date_default_timezone_set('Asia/Bangkok');   
         session_start();
         include("conn/conn.php");
         include("libs/function.php");
@@ -37,7 +37,7 @@
 
 </script>
 
-                <div id="page-wrapper">
+        <div id="page-wrapper">
                 <div class="container-fluid">
                 <!-- Page Heading -->
                 <div class="row">
@@ -52,6 +52,10 @@
                         </ol> -->
                     </div>
                 </div>
+
+
+
+
 
 
                 <div class="row">

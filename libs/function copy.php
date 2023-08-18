@@ -1,5 +1,4 @@
 <?php
-        date_default_timezone_set('Asia/Bangkok');   
 error_reporting (E_ALL ^ E_NOTICE);
 include_once("conn/conn.php");
 include("libs/config.php");
@@ -1041,9 +1040,6 @@ function get_rows_Accident_Error_detail_list($error_code, $vn4digit, $xls) {
 
 function get_row_Diag_opd_Error_all($vn4digit) {
 
-    $timechk = date('H');
-
-   
     $sql = "select 'DX1130' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX1130'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC
 				from vn_stat 
 				where (pdx is null or pdx = '') and vn like'$vn4digit%'
@@ -1139,131 +1135,58 @@ function get_row_Diag_opd_Error_all($vn4digit) {
                      LEFT JOIN patient ON ovstdiag.hn = patient.hn
                      LEFT JOIN ovst on ovstdiag.vn = ovst.vn
                     where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' 
-                    " ;
-   if($timechk==15 ){        
-                $sql = $sql."  
-                
+
+
                     UNION
 
                     select 'DX9912' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9912'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                     from ovst 
                      LEFT JOIN patient ON ovst.hn = patient.hn
                      LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                    where  ovst.vn in(
-                        SELECT v1.vn
-                        from ovst v1
-                        INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                        left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                        where opitemrece.icode in('1660003') and v1.an is null
-                        GROUP BY v1.vn 
-                        HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U643','U5831','U5931') then 'OK' else 'CHK' end )) like'CHK')
-                        ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and  ovst.vn like'$vn4digit%' 
+                    where  ovst.vn in(SELECT opitemrece.vn
+                    from ovst v1
+                    LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                    LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                    where (opitemrece.icode in('1660003','1900308','1530056')  or ovstdiag.icd10 in('U643')) 
+                      and v1.vn like'$vn4digit%'  and v1.an is null  
+                    GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                    HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U643') then ovstdiag.icd10 else null end )) is null
+                    ORDER BY v1.vstdate ) and pttype.hipdata_code in('UCS') and ovst.vn like'$vn4digit%' 
 
                     UNION
 
                     select 'DX9913' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9913'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                     from ovst 
-                     LEFT JOIN patient ON ovst.hn = patient.hn
-                     LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                    where  ovst.vn in(
-                        SELECT v1.vn
-                        from ovst v1
-                        INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                        left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                        where opitemrece.icode in('1900308') and v1.an is null
-                        GROUP BY v1.vn 
-                        HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U643') then 'OK' else 'CHK' end )) like'CHK')
-                        )  and ovst.an is null and pttype.hipdata_code in('UCS')  and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%' 
+                        LEFT JOIN patient ON ovst.hn = patient.hn
+                        LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
+                    where  ovst.vn in(SELECT opitemrece.vn
+                    from ovst  v1
+                        LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                        LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                        where (opitemrece.icode in('1530057','1580008')  or ovstdiag.icd10 in('U6680')) 
+                        and v1.vn like'$vn4digit%'  and v1.an is null  
+                        GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                        HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U6680') then ovstdiag.icd10 else null end )) is null
+                        ORDER BY v1.vstdate  )  and pttype.hipdata_code in('UCS') and ovst.vn like'$vn4digit%'  
 
                     UNION
 
 
                     select 'DX9914' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9914'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                     from ovst 
-                     LEFT JOIN patient ON ovst.hn = patient.hn
-                     LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                    where  ovst.vn in(
-                        SELECT v1.vn
-                        from ovst v1
-                        INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                        left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                        where opitemrece.icode in('1530057') and v1.an is null
-                        GROUP BY v1.vn 
-                        HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U6680','U6670','U6684') then 'OK' else 'CHK' end )) like'CHK')
-                        ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
-
-                        UNION
-
-                        select 'DX9915' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9915'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                         LEFT JOIN patient ON ovst.hn = patient.hn
-                         LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1530056') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U560','U5602','U561','U5610','U5611','U5619','U568','U569') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
-
-                        UNION
-
-                        select 'DX9916' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9916'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                         LEFT JOIN patient ON ovst.hn = patient.hn
-                         LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1640013') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U750','U7500','U7501','U7502','U7503','U7504','U7505','U7506','U7508','U7509','U572','U5720','U5721','U5722','U5723','U5724','U5725','U5726','U5727','U5728','U5729','U573','U5730','U5731','U5732','U5733','U5734') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
-
-
-                        UNION
-
-                        select 'DX9917' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9917'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                            LEFT JOIN patient ON ovst.hn = patient.hn
-                            LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1580008') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U6680','U6670') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%' 
-
-                        UNION
-
-                        select 'DX9918' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9918'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                            LEFT JOIN patient ON ovst.hn = patient.hn
-                            LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1580013') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U750','U7500','U7501','U7502','U7503','U7504','U7505','U7506','U7508','U7509','U572','U5720','U5721','U5722','U5723','U5724','U5725','U5726','U5727','U5728','U5729','U573','U5730','U5731','U5732','U5733','U5734') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS')  and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%' 
-                        
+                        LEFT JOIN patient ON ovst.hn = patient.hn
+                        LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
+                    where  ovst.vn in(SELECT opitemrece.vn
+                    from ovst  v1
+                        LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                        LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                        where (opitemrece.icode in('1640013','1580013')  or ovstdiag.icd10 in('U7505')) 
+                        and v1.vn like'$vn4digit%'  and v1.an is null  
+                        GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                        HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U7505') then ovstdiag.icd10 else null end )) is null
+                        ORDER BY v1.vstdate   ) and pttype.hipdata_code in('UCS')  and ovst.vn like'$vn4digit%'  
 
 				";
-            }
-        else{
-
-            $sql = $sql;
-        }
     //echo $sql;	
     $CC = 0;
     $query = mysql_query($sql);
@@ -1275,9 +1198,6 @@ function get_row_Diag_opd_Error_all($vn4digit) {
 }
 
 function get_rows_Diag_opd_Error_detail($vn4digit) {
-            date_default_timezone_set('Asia/Bangkok');   
-
-    $timechk = date('H');
 
     $sql = "select 'DX1130' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX1130'  ) as 'ERROR_DETAIL' ,ifnull(count(vn),0) as CC
 				from vn_stat 
@@ -1374,138 +1294,60 @@ function get_rows_Diag_opd_Error_detail($vn4digit) {
                          LEFT JOIN patient ON ovstdiag.hn = patient.hn
                          LEFT JOIN ovst on ovstdiag.vn = ovst.vn
                         where  ASCII(SUBSTR(icd10,1,1)) = 85 and ovstdiag.diagtype = 1 and ovstdiag.icd10 not in('U119') and ovst.vn  like'$vn4digit%' 
-                ";
 
-
-if($timechk==15){        
-    $sql = $sql." 
                 UNION
-
 
                 select 'DX9912' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9912'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                 from ovst 
-                 LEFT JOIN patient ON ovst.hn = patient.hn
-                 LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                where  ovst.vn in(
-                    SELECT v1.vn
-                    from ovst v1
-                    INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                    left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                    where opitemrece.icode in('1660003') and v1.an is null
-                    GROUP BY v1.vn 
-                    HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U643','U5831','U5931') then 'OK' else 'CHK' end )) like'CHK')
-                    ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y' and  ovst.vn like'$vn4digit%' 
+                    LEFT JOIN patient ON ovst.hn = patient.hn
+                    LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
+                where  ovst.vn in(SELECT opitemrece.vn
+                from ovst v1
+                LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                where (opitemrece.icode in('1660003','1900308','1530056')  or ovstdiag.icd10 in('U643')) 
+                    and v1.vn like'$vn4digit%'  and v1.an is null  
+                GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U643') then ovstdiag.icd10 else null end )) is null
+                ORDER BY v1.vstdate ) and pttype.hipdata_code in('UCS')  and ovst.vn like'$vn4digit%' 
 
                 UNION
 
 
                 select 'DX9913' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9913'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
                 from ovst 
-                 LEFT JOIN patient ON ovst.hn = patient.hn
-                 LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                where  ovst.vn in(
-                    SELECT v1.vn
-                    from ovst v1
-                    INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                    left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                    where opitemrece.icode in('1900308') and v1.an is null
-                    GROUP BY v1.vn 
-                    HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U643') then 'OK' else 'CHK' end )) like'CHK')
-                    ) and ovst.an is null  and pttype.hipdata_code in('UCS')  and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'     
+                    LEFT JOIN patient ON ovst.hn = patient.hn
+                    LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
+                where  ovst.vn in(SELECT opitemrece.vn
+                from ovst  v1
+                    LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                    LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                    where (opitemrece.icode in('1530057','1580008')  or ovstdiag.icd10 in('U6680')) 
+                    and v1.vn  like'$vn4digit%'   and v1.an is null  
+                    GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                    HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U6680') then ovstdiag.icd10 else null end )) is null
+                    ORDER BY v1.vstdate  ) and pttype.hipdata_code in('UCS')  and ovst.vn like'$vn4digit%'     
                     
 
                     UNION
 
 
-                    select 'DX9914' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9914'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                    from ovst 
-                     LEFT JOIN patient ON ovst.hn = patient.hn
-                     LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                    where  ovst.vn in(
-                        SELECT v1.vn
-                        from ovst v1
-                        INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                        left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                        where opitemrece.icode in('1530057') and v1.an is null
-                        GROUP BY v1.vn 
-                        HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U6680','U6670','U6684') then 'OK' else 'CHK' end )) like'CHK')
-                        ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
+                select 'DX9914' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9914'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
+                from ovst 
+                    LEFT JOIN patient ON ovst.hn = patient.hn
+                    LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
+                where  ovst.vn in(SELECT opitemrece.vn
+                from ovst  v1
+                    LEFT JOIN opitemrece on v1.vn = opitemrece.vn 
+                    LEFT JOIN ovstdiag on opitemrece.vn = ovstdiag.vn 
+                    where (opitemrece.icode in('1640013','1580013')  or ovstdiag.icd10 in('U7505')) 
+                    and v1.vn like'$vn4digit%'   and v1.an is null  
+                    GROUP BY opitemrece.hn,opitemrece.vstdate,opitemrece.vn
+                    HAVING GROUP_CONCAT(DISTINCT( case when ovstdiag.icd10 in('U7505') then ovstdiag.icd10 else null end )) is null
+                    ORDER BY v1.vstdate   )  and pttype.hipdata_code in('UCS') and ovst.vn like'$vn4digit%'  
 
-                    UNION
-
-                    select 'DX9915' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9915'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                    from ovst 
-                     LEFT JOIN patient ON ovst.hn = patient.hn
-                     LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                    where  ovst.vn in(
-                        SELECT v1.vn
-                        from ovst v1
-                        INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                        left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                        where opitemrece.icode in('1530056') and v1.an is null 
-                        GROUP BY v1.vn 
-                        HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U560','U5602','U561','U5610','U5611','U5619','U568','U569') then 'OK' else 'CHK' end )) like'CHK')
-                        ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
-
-
-                        UNION
-
-                        select 'DX9916' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9916'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                         LEFT JOIN patient ON ovst.hn = patient.hn
-                         LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1640013') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U750','U7500','U7501','U7502','U7503','U7504','U7505','U7506','U7508','U7509','U572','U5720','U5721','U5722','U5723','U5724','U5725','U5726','U5727','U5728','U5729','U573','U5730','U5731','U5732','U5733','U5734') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%'  
-
-                        UNION
-
-                        select 'DX9917' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9917'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                        from ovst 
-                         LEFT JOIN patient ON ovst.hn = patient.hn
-                         LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                        where  ovst.vn in(
-                            SELECT v1.vn
-                            from ovst v1
-                            INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                            left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                            where opitemrece.icode in('1580008') and v1.an is null 
-                            GROUP BY v1.vn 
-                            HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U6680','U6670') then 'OK' else 'CHK' end )) like'CHK')
-                            ) and ovst.an is null and pttype.hipdata_code in('UCS') and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%' 
-
-
-
-                            UNION
-
-                            select 'DX9918' as 'ERROR_CODE',(select ERROR_DETAIL from pk_err_code_chk where ERROR_CODE = 'DX9918'  ) as 'ERROR_DETAIL' ,ifnull(count(DISTINCT(ovst.vn)),0) as CC
-                            from ovst 
-                                LEFT JOIN patient ON ovst.hn = patient.hn
-                                LEFT JOIN pttype on  ovst.pttype = pttype.pttype 
-                            where  ovst.vn in(
-                                SELECT v1.vn
-                                from ovst v1
-                                INNER JOIN opitemrece on v1.vn =  opitemrece.vn
-                                left JOIN ovstdiag on v1.vn = ovstdiag.vn 
-                                where opitemrece.icode in('1580013') and v1.an is null 
-                                GROUP BY v1.vn 
-                                HAVING (group_concat(DISTINCT(case when ovstdiag.icd10 in('U750','U7500','U7501','U7502','U7503','U7504','U7505','U7506','U7508','U7509','U572','U5720','U5721','U5722','U5723','U5724','U5725','U5726','U5727','U5728','U5729','U573','U5730','U5731','U5732','U5733','U5734') then 'OK' else 'CHK' end )) like'CHK')
-                                ) and ovst.an is null and pttype.hipdata_code in('UCS')  and pttype.isuse = 'Y'  and ovst.vn like'$vn4digit%' 
-                    ";
-                     }
-        else{
-
-            $sql = $sql;
-        }                     
-
-             $sql = $sql."	order by CC desc , ERROR_CODE ";
-   // echo $sql;	
+				order by CC desc , ERROR_CODE ";
+    //echo $sql;	
     $CC = 0;
     $query = mysql_query($sql);
     $aherf = "";
@@ -2749,8 +2591,6 @@ function get_row_Dental_Error_all($vn4digit) {
 
 				  ";
     
-                //  echo  '<br>'.$sql;
-
 
     $CC = 0;
     $query = mysql_query($sql);
@@ -3092,9 +2932,7 @@ function get_rows_Dental_Error_detail($vn4digit) {
             
             
              order by CC desc , ERROR_CODE , ERROR_CODE ";
-
-
-   // echo $sql;
+    
    
     $CC = 0;
     $query = mysql_query($sql);
